@@ -4,16 +4,16 @@
    Parity-tested against the Python reference across the full scenario grid. */
 
 const GRADES = {
-  "409":  { family: "ferritic",         pren: 10.5, ys: 205, cost: 0.90, form: 3, weld: 3, maxTemp: 815,  mo: 0.0, lGrade: false, stabilized: true,  tags: ["exhaust"] },
+  "409":  { family: "ferritic",         pren: 10.5, ys: 170, cost: 0.90, form: 3, weld: 3, maxTemp: 815,  mo: 0.0, lGrade: false, stabilized: true,  tags: ["exhaust"] },
   "430":  { family: "ferritic",         pren: 16.5, ys: 205, cost: 1.00, form: 3, weld: 2, maxTemp: 815,  mo: 0.0, lGrade: false, stabilized: false, tags: ["interior", "appliance", "kitchen_panel"] },
   "439":  { family: "ferritic",         pren: 17.5, ys: 205, cost: 1.05, form: 3, weld: 3, maxTemp: 845,  mo: 0.0, lGrade: false, stabilized: true,  tags: ["exhaust"] },
-  "202":  { family: "austenitic200",    pren: 16.5, ys: 260, cost: 1.10, form: 4, weld: 3, maxTemp: 815,  mo: 0.0, lGrade: false, stabilized: false, tags: ["utensil_bis", "furniture", "interior"] },
+  "202":  { family: "austenitic200",    pren: 18.0, ys: 260, cost: 1.10, form: 4, weld: 3, maxTemp: 815,  mo: 0.0, lGrade: false, stabilized: false, tags: ["utensil_bis", "furniture", "interior"] },
   "304":  { family: "austenitic300",    pren: 19.0, ys: 205, cost: 1.30, form: 5, weld: 4, maxTemp: 870,  mo: 0.0, lGrade: false, stabilized: false, tags: ["utensil_bis", "railing", "interior", "railway_rdso", "food_processing", "facade"] },
   "304L": { family: "austenitic300",    pren: 19.0, ys: 170, cost: 1.35, form: 5, weld: 5, maxTemp: 870,  mo: 0.0, lGrade: true,  stabilized: false, tags: ["food_processing", "water_treatment"] },
   "316":  { family: "austenitic300",    pren: 24.5, ys: 205, cost: 1.60, form: 4, weld: 4, maxTemp: 870,  mo: 2.1, lGrade: false, stabilized: false, tags: ["railing", "facade", "food_processing", "marine", "railway_rdso"] },
-  "316L": { family: "austenitic300",    pren: 24.0, ys: 170, cost: 1.65, form: 4, weld: 5, maxTemp: 870,  mo: 2.1, lGrade: true,  stabilized: false, tags: ["water_treatment", "food_processing", "pharma", "marine"] },
-  "321":  { family: "austenitic300",    pren: 18.5, ys: 205, cost: 1.50, form: 4, weld: 5, maxTemp: 900,  mo: 0.0, lGrade: false, stabilized: true,  tags: ["high_temp"] },
-  "310":  { family: "austenitic300",    pren: 25.0, ys: 205, cost: 2.00, form: 3, weld: 4, maxTemp: 1150, mo: 0.0, lGrade: false, stabilized: false, tags: ["furnace", "high_temp"] },
+  "316L": { family: "austenitic300",    pren: 24.0, ys: 170, cost: 1.65, form: 4, weld: 5, maxTemp: 870,  mo: 2.1, lGrade: true,  stabilized: false, tags: ["railing", "facade", "water_treatment", "food_processing", "pharma", "marine", "electrolyzer"] },
+  "321":  { family: "austenitic300",    pren: 18.5, ys: 205, cost: 1.50, form: 4, weld: 5, maxTemp: 870,  mo: 0.0, lGrade: false, stabilized: true,  tags: ["high_temp"] },
+  "310":  { family: "austenitic300",    pren: 25.0, ys: 205, cost: 2.00, form: 3, weld: 4, maxTemp: 1035, mo: 0.0, lGrade: false, stabilized: false, tags: ["furnace", "high_temp"] },
   "2205": { family: "duplex",           pren: 35.0, ys: 450, cost: 1.80, form: 2, weld: 3, maxTemp: 300,  mo: 3.1, lGrade: true,  stabilized: false, tags: ["railing", "facade", "marine", "water_treatment", "electrolyzer", "chemical"] },
   "904L": { family: "super_austenitic", pren: 35.5, ys: 220, cost: 3.00, form: 3, weld: 4, maxTemp: 400,  mo: 4.3, lGrade: true,  stabilized: false, tags: ["electrolyzer", "chemical", "marine", "water_treatment"] },
 };
@@ -28,42 +28,47 @@ const CATALOG_COST_MAX = Math.max(...costs);
 
 const DISTRICTS = {
   "Mumbai (Marine Drive)": { coast: 0.5,  rh: 75, rain: 2200, so2: "med",
-    documented: "Severe pitting documented on 304 railings within 18-24 months; 316 acceptable" },
+    documented: "Severe pitting reported on 304 railings within 18-24 months (field observation); 316 acceptable with cleaning" },
   "Panaji, Goa":           { coast: 2.0,  rh: 78, rain: 2900, so2: "low",
-    documented: "Coastal monsoon belt; 304 pits in 2-3 yrs; 316/duplex specified for exteriors" },
+    documented: "Coastal monsoon belt; 304 pits in 2-3 yrs (field observation); 316/duplex specified for exteriors" },
   "Chennai":               { coast: 3.0,  rh: 70, rain: 1400, so2: "med",
     documented: "Aggressive coastal-urban; duplex used for critical coastal infrastructure" },
   "Visakhapatnam":         { coast: 2.0,  rh: 70, rain: 1100, so2: "high",
-    documented: "Among India's most corrosive atmospheres (coastal + industrial SO2)" },
+    documented: "Among India's most corrosive atmospheres (coastal + industrial SO2; CECRI exposure studies)" },
   "Surat":                 { coast: 15.0, rh: 65, rain: 1200, so2: "med",
     documented: "304 adequate but early exterior tarnishing after 5-7 yrs; 316 for premium installs" },
   "Jamshedpur":            { coast: 250,  rh: 65, rain: 1400, so2: "high",
     documented: "Industrial atmospheric corrosion; 304 adequate for most uses; 316L for chemical exposure" },
-  "Delhi":                 { coast: 1000, rh: 55, rain: 800,  so2: "med",
-    documented: "Urban inland; 304 standard for architecture and transit interiors" },
-  "Pune":                  { coast: 100,  rh: 55, rain: 722,  so2: "med",
+  "Delhi":                 { coast: 1000, rh: 52, rain: 790,  so2: "med",
+    documented: "Urban inland; 304 standard for architecture and transit interior fittings" },
+  "Pune":                  { coast: 100,  rh: 58, rain: 722,  so2: "med",
     documented: "Inland industrial; standard grades perform well" },
-  "Rajkot":                { coast: 200,  rh: 55, rain: 580,  so2: "low",
-    documented: "Dry inland; 202/304 standard for utensil industry" },
-  "Nashik":                { coast: 150,  rh: 50, rain: 600,  so2: "low",
+  "Rajkot":                { coast: 100,  rh: 50, rain: 590,  so2: "low",
+    documented: "Dry inland; 202-type/304 standard for utensil industry" },
+  "Nashik":                { coast: 150,  rh: 52, rain: 690,  so2: "low",
     documented: "Semi-arid inland; 304 and 430 perform well outdoors" },
-  "Hisar":                 { coast: 1200, rh: 45, rain: 450,  so2: "low",
-    documented: "Continental dry (Jindal HQ); minimal atmospheric corrosion" },
-  "Jaipur":                { coast: 1300, rh: 35, rain: 550,  so2: "low",
-    documented: "Arid; even 202/430 perform well outdoors" },
+  "Hisar":                 { coast: 1100, rh: 50, rain: 450,  so2: "low",
+    documented: "Continental dry (Jindal registered office and Hisar plant); minimal atmospheric corrosion" },
+  "Jaipur":                { coast: 900,  rh: 43, rain: 600,  so2: "low",
+    documented: "Semi-arid; even 202-type/430 perform well outdoors" },
 };
 
 const CATEGORY_ORDER = ["C1", "C1-C2", "C2", "C2-C3", "C3", "C3-C4", "C4", "C4-C5", "C5", "CX"];
 const PREN_THRESHOLDS = {
   "C1": [0, 0], "C1-C2": [0, 14], "C2": [14, 14], "C2-C3": [14, 18],
   "C3": [18, 18], "C3-C4": [18, 24], "C4": [24, 24], "C4-C5": [24, 30],
-  "C5": [30, 30], "CX": [35, 35],
+  "C5": [24, 30], "CX": [30, 35],
 };
 
 const APPLICATIONS = {
   outdoor_railing:  { tag: "railing",         profile: [0.6, 0.3, 0.1] },
-  kitchen_utensils: { tag: "utensil_bis",     profile: [0.4, 0.5, 0.1] },
-  pem_electrolyzer: { tag: "electrolyzer",    profile: [0.7, 0.1, 0.2], chemical: true, welded: true, temp: 80 },
+  kitchen_utensils: { tag: "utensil_bis",     profile: [0.4, 0.5, 0.1],
+                      override: { floor: [16, 18], label: "food-contact service (PREN floor 16, target 18)",
+                                  display: "food-contact service (washed, indoor) -- atmospheric pathway not applicable" } },
+  pem_electrolyzer: { tag: "electrolyzer",    profile: [0.7, 0.1, 0.2], chemical: true, welded: true, temp: 80,
+                      override: { floor: [24, 30], label: "chemical service (PREN floor 24, target 30)",
+                                  display: "chemical (pH<3, 80C, PEM balance-of-plant) -- atmospheric pathway overridden" },
+                      exclude: { duplex: "hydrogen-assisted fracture risk in the ferrite phase (Sandia H2 Technical Reference); not offered for H2-wetted service" } },
   auto_exhaust:     { tag: "exhaust",         profile: [0.6, 0.3, 0.1], temp: 750, internal: true },
   cooling_tower:    { tag: "water_treatment", profile: [0.6, 0.2, 0.2], mic: true, welded: true },
   metro_interior:   { tag: "railway_rdso",    profile: [0.3, 0.4, 0.3], indoor: true },
@@ -92,14 +97,14 @@ function classifyEnvironment(districtName) {
 function effectiveCategory(cat, indoor) {
   if (!indoor) return cat;
   const i = CATEGORY_ORDER.indexOf(cat);
-  return CATEGORY_ORDER[Math.max(0, i - 1)];
+  return CATEGORY_ORDER[Math.min(Math.max(0, i - 2), CATEGORY_ORDER.indexOf("C3"))];
 }
 
 /* ----- Layer 2: failure-mode eliminator ----- */
 function eliminate(appKey, category, welded, serviceTemp) {
   const app = APPLICATIONS[appKey];
   let hard, upper;
-  if (app.chemical) { hard = 30; upper = 30; }
+  if (app.override) [hard, upper] = app.override.floor;
   else if (app.internal) { hard = 0; upper = 0; }
   else [hard, upper] = PREN_THRESHOLDS[category];
 
@@ -107,6 +112,10 @@ function eliminate(appKey, category, welded, serviceTemp) {
   for (const name of GRADE_ORDER) {
     const g = GRADES[name];
     if (!g.tags.includes(app.tag)) continue;
+    if (app.exclude && app.exclude[g.family]) {
+      log.push(`  x ${name} eliminated: ${app.exclude[g.family]}`);
+      continue;
+    }
     if (g.pren < hard) {
       log.push(`  x ${name} eliminated: PREN ${g.pren.toFixed(1)} < floor ${hard} for ${category}`);
       continue;
@@ -205,10 +214,10 @@ function recommend(appKey, district = null, costSensitivity = "medium",
   if (serviceTemp === null) serviceTemp = app.temp ?? null;
 
   let raw, catForFilter, catDisplay;
-  if (app.chemical) {
+  if (app.override) {
     raw = null;
-    catForFilter = "chemical service (PREN floor 30)";
-    catDisplay = "chemical (pH<3, 80C) -- atmospheric pathway overridden";
+    catForFilter = app.override.label;
+    catDisplay = app.override.display;
   } else {
     raw = classifyEnvironment(district);
     catForFilter = effectiveCategory(raw, Boolean(app.indoor));
