@@ -22,9 +22,10 @@ const GRADES = {
 // iteration order must be pinned explicitly to match the Python reference.
 const GRADE_ORDER = ["409", "430", "439", "202", "304", "304L", "316", "316L", "321", "310", "2205", "904L"];
 
-const costs = Object.values(GRADES).map((g) => g.cost);
-const CATALOG_COST_MIN = Math.min(...costs);
-const CATALOG_COST_MAX = Math.max(...costs);
+// Fixed cost-normalisation anchors (not derived from the catalogue: adding a grade
+// must never change the ranking of an unrelated query). Clamped to [0, 1].
+const COST_INDEX_LO = 0.9, COST_INDEX_HI = 3.0;
+const CATALOG_COST_MIN = COST_INDEX_LO, CATALOG_COST_MAX = COST_INDEX_HI;
 
 const DISTRICTS = {
   "Mumbai (Marine Drive)": { coast: 0.5,  rh: 75, rain: 2200, so2: "med",
@@ -66,8 +67,8 @@ const APPLICATIONS = {
                       override: { floor: [16, 18], label: "food-contact service (PREN floor 16, target 18)",
                                   display: "food-contact service (washed, indoor) -- atmospheric pathway not applicable" } },
   pem_electrolyzer: { tag: "electrolyzer",    profile: [0.7, 0.1, 0.2], chemical: true, welded: true, temp: 80,
-                      override: { floor: [24, 30], label: "chemical service (PREN floor 24, target 30)",
-                                  display: "chemical (pH<3, 80C, PEM balance-of-plant) -- atmospheric pathway overridden" },
+                      override: { floor: [24, 30], label: "chemical service (alloy-content floor: PREN 24, target 30)",
+                                  display: "chemical (PEM balance-of-plant: high-purity water + O2, 80C, H2 side) -- atmospheric pathway overridden" },
                       exclude: { duplex: "hydrogen-assisted fracture risk in the ferrite phase (Sandia H2 Technical Reference); not offered for H2-wetted service" } },
   auto_exhaust:     { tag: "exhaust",         profile: [0.6, 0.3, 0.1], temp: 750, internal: true },
   cooling_tower:    { tag: "water_treatment", profile: [0.6, 0.2, 0.2], mic: true, welded: true },
@@ -124,12 +125,16 @@ function eliminate(appKey, category, welded, serviceTemp) {
       log.push(`  x ${name} eliminated: max service temp ${g.maxTemp}C < required ${serviceTemp}C`);
       continue;
     }
-    if (welded && g.family === "austenitic300" && !g.lGrade && !g.stabilized && hard >= 24) {
-      log.push(`  x ${name} eliminated: sensitization risk (welded, non-L) in ${category}`);
-      continue;
-    }
+    let weldCaution = false;
+      if (welded && g.family === "austenitic300" && !g.lGrade && !g.stabilized) {
+        if (hard >= 24) {
+          log.push(`  x ${name} eliminated: sensitization risk (welded, non-L) in ${category}`);
+          continue;
+        }
+        if (hard >= 18) weldCaution = true;
+      }
     if (app.mic && g.mo < 2.0) {
-      log.push(`  x ${name} eliminated: MIC risk (Mo ${g.mo.toFixed(1)}% < 2%) in stagnant water`);
+      log.push(`  x ${name} eliminated: MIC risk (Mo ${g.mo.toFixed(1)}% < 2%) in stagnant water; Mo-bearing grade required, stagnation control still mandatory`);
       continue;
     }
     survivors.push(name);
@@ -137,20 +142,25 @@ function eliminate(appKey, category, welded, serviceTemp) {
       marginal[name] = true;
       log.push(`  ! ${name} passes but MARGINAL: PREN ${g.pren.toFixed(1)} < upper target ${upper}`);
     }
+    if (weldCaution) {
+      marginal[name] = true;
+      log.push(`  ! ${name} passes but MARGINAL: weld sensitization risk (non-L, welded) in ${category} -- specify the L-grade or verify thin section / low heat input`);
+    }
   }
   return { survivors, marginal, log, hard, upper };
 }
 
 /* ----- Layer 3: trade-off ranker + Pareto frontier ----- */
-function rank(survivors, marginal, appKey, costSensitivity) {
+function rank(survivors, marginal, appKey, costSensitivity, welded = false) {
   const app = APPLICATIONS[appKey];
   const wCost = COST_WEIGHT[costSensitivity];
   const [wEnv, wForm, wStr] = app.profile.map((p) => p * (1 - wCost));
   const scored = survivors.map((name) => {
     const g = GRADES[name];
-    const costScore = (CATALOG_COST_MAX - g.cost) / (CATALOG_COST_MAX - CATALOG_COST_MIN);
+    const costScore = Math.min(1.0, Math.max(0.0, (COST_INDEX_HI - g.cost) / (COST_INDEX_HI - COST_INDEX_LO)));
     const envScore = marginal[name] ? 0.7 : 1.0;
-    const formScore = g.form / 5.0;
+    const fab = welded ? (g.form + g.weld) / 2.0 : g.form;
+    const formScore = fab / 5.0;
     const strScore = Math.min(1.0, g.ys / 500.0);
     const total = wCost * costScore + wEnv * envScore + wForm * formScore + wStr * strScore;
     return { score: round(total, 4), name };
@@ -225,7 +235,7 @@ function recommend(appKey, district = null, costSensitivity = "medium",
   }
 
   const { survivors, marginal, log, hard, upper } = eliminate(appKey, catForFilter, welded, serviceTemp);
-  const ranking = rank(survivors, marginal, appKey, costSensitivity);
+  const ranking = rank(survivors, marginal, appKey, costSensitivity, welded);
   const front = paretoFrontier([...survivors]);
 
   let economics = null;

@@ -419,9 +419,10 @@ const GRADES = {
   "904L": { family: "super_austenitic", pren: 35.5, ys: 220, cost: 3.00, form: 3, weld: 4, maxTemp: 400,  mo: 4.3, lGrade: true,  stabilized: false, tags: ["electrolyzer", "chemical", "marine", "water_treatment"] },
 };
 const GRADE_ORDER = ["409", "430", "439", "202", "304", "304L", "316", "316L", "321", "310", "2205", "904L"];
-const costs = Object.values(GRADES).map((g) => g.cost);
-const CATALOG_COST_MIN = Math.min(...costs);
-const CATALOG_COST_MAX = Math.max(...costs);
+// Fixed cost-normalisation anchors (not derived from the catalogue: adding a grade
+// must never change the ranking of an unrelated query). Clamped to [0, 1].
+const COST_INDEX_LO = 0.9, COST_INDEX_HI = 3.0;
+const CATALOG_COST_MIN = COST_INDEX_LO, CATALOG_COST_MAX = COST_INDEX_HI;
 
 const DISTRICTS = {
   "Mumbai (Marine Drive)": { coast: 0.5,  rh: 75, rain: 2200, so2: "med",
@@ -463,8 +464,8 @@ const APPLICATIONS = {
    override: { floor: [16, 18], label: "food-contact service (PREN floor 16, target 18)",
                display: "food-contact service (washed, indoor) -- atmospheric pathway not applicable" } },
   pem_electrolyzer: { tag: "electrolyzer",    profile: [0.7, 0.1, 0.2], chemical: true, welded: true, temp: 80,
-   override: { floor: [24, 30], label: "chemical service (PREN floor 24, target 30)",
-               display: "chemical (pH<3, 80C, PEM balance-of-plant) -- atmospheric pathway overridden" },
+   override: { floor: [24, 30], label: "chemical service (alloy-content floor: PREN 24, target 30)",
+               display: "chemical (PEM balance-of-plant: high-purity water + O2, 80C, H2 side) -- atmospheric pathway overridden" },
    exclude: { duplex: "hydrogen-assisted fracture risk in the ferrite phase (Sandia H2 Technical Reference); not offered for H2-wetted service" } },
   auto_exhaust:     { tag: "exhaust",         profile: [0.6, 0.3, 0.1], temp: 750, internal: true },
   cooling_tower:    { tag: "water_treatment", profile: [0.6, 0.2, 0.2], mic: true, welded: true },
@@ -516,12 +517,16 @@ function eliminate(appKey, category, welded, serviceTemp) {
       log.push(`  x ${name} eliminated: max service temp ${g.maxTemp}C < required ${serviceTemp}C`);
       continue;
     }
-    if (welded && g.family === "austenitic300" && !g.lGrade && !g.stabilized && hard >= 24) {
-      log.push(`  x ${name} eliminated: sensitization risk (welded, non-L) in ${category}`);
-      continue;
-    }
+    let weldCaution = false;
+      if (welded && g.family === "austenitic300" && !g.lGrade && !g.stabilized) {
+        if (hard >= 24) {
+          log.push(`  x ${name} eliminated: sensitization risk (welded, non-L) in ${category}`);
+          continue;
+        }
+        if (hard >= 18) weldCaution = true;
+      }
     if (app.mic && g.mo < 2.0) {
-      log.push(`  x ${name} eliminated: MIC risk (Mo ${g.mo.toFixed(1)}% < 2%) in stagnant water`);
+      log.push(`  x ${name} eliminated: MIC risk (Mo ${g.mo.toFixed(1)}% < 2%) in stagnant water; Mo-bearing grade required, stagnation control still mandatory`);
       continue;
     }
     survivors.push(name);
@@ -529,19 +534,24 @@ function eliminate(appKey, category, welded, serviceTemp) {
       marginal[name] = true;
       log.push(`  ! ${name} passes but MARGINAL: PREN ${g.pren.toFixed(1)} < upper target ${upper}`);
     }
+    if (weldCaution) {
+      marginal[name] = true;
+      log.push(`  ! ${name} passes but MARGINAL: weld sensitization risk (non-L, welded) in ${category} -- specify the L-grade or verify thin section / low heat input`);
+    }
   }
   return { survivors, marginal, log, hard, upper };
 }
 
-function rank(survivors, marginal, appKey, costSensitivity) {
+function rank(survivors, marginal, appKey, costSensitivity, welded = false) {
   const app = APPLICATIONS[appKey];
   const wCost = COST_WEIGHT[costSensitivity];
   const [wEnv, wForm, wStr] = app.profile.map((p) => p * (1 - wCost));
   const scored = survivors.map((name) => {
     const g = GRADES[name];
-    const costScore = (CATALOG_COST_MAX - g.cost) / (CATALOG_COST_MAX - CATALOG_COST_MIN);
+    const costScore = Math.min(1.0, Math.max(0.0, (COST_INDEX_HI - g.cost) / (COST_INDEX_HI - COST_INDEX_LO)));
     const envScore = marginal[name] ? 0.7 : 1.0;
-    const formScore = g.form / 5.0;
+    const fab = welded ? (g.form + g.weld) / 2.0 : g.form;
+    const formScore = fab / 5.0;
     const strScore = Math.min(1.0, g.ys / 500.0);
     const total = wCost * costScore + wEnv * envScore + wForm * formScore + wStr * strScore;
     return { score: round(total, 4), name };
@@ -614,7 +624,7 @@ function recommend(appKey, district = null, costSensitivity = "medium",
   }
 
   const { survivors, marginal, log, hard, upper } = eliminate(appKey, catForFilter, welded, serviceTemp);
-  const ranking = rank(survivors, marginal, appKey, costSensitivity);
+  const ranking = rank(survivors, marginal, appKey, costSensitivity, welded);
   const front = paretoFrontier([...survivors]);
 
   let economics = null;
@@ -713,7 +723,7 @@ window.GradeCompass = {
     distSel.disabled = Boolean(ov);
     $("district-note").hidden = !ov;
     if (ov) $("district-note").textContent = app.chemical
-      ? "Environment set by chemical service (pH < 3, 80 °C), not by location."
+      ? "Environment set by the PEM service medium (high-purity water + O₂, 80 °C, H₂ side), not by location."
       : "Utensils are used and washed indoors: eligibility follows food-contact/BIS practice, not the district\'s outdoor corrosivity.";
   }
 
@@ -772,11 +782,11 @@ window.GradeCompass = {
       el.innerHTML = app.chemical ? `
         <div class="env-grid">
           <div class="env-item env-cat"><b>Chemical service<\/b><span class="tag">pathway<\/span><\/div>
-          <div class="env-item"><b>&lt; 3<\/b><span class="tag">pH<\/span><\/div>
+          <div class="env-item"><b>DI water + O₂<\/b><span class="tag">medium<\/span><\/div>
           <div class="env-item"><b>80 °C<\/b><span class="tag">operating temp<\/span><\/div>
           <div class="env-item"><b>≥ ${fl} / ${up}<\/b><span class="tag">PREN floor / target<\/span><\/div>
         <\/div>
-        <p class="env-doc">PEM electrolyser balance-of-plant (acidic DI-water / O₂-side piping, 80 °C, welded) overrides the atmospheric pathway: PREN floor ${fl}, marginal below ${up}. Stack parts (bipolar plates, porous transport layers) are coated titanium and outside a stainless selector's scope; duplex grades are excluded on hydrogen-embrittlement grounds (ferrite phase — Sandia H₂ Technical Reference).<\/p>` : `
+        <p class="env-doc">PEM electrolyser balance-of-plant (high-purity DI water carrying dissolved O₂, 60–80 °C, welded; hydrogen on the cathode side) overrides the atmospheric pathway. The drivers are metal-ion leaching into the membrane and hydrogen embrittlement, not chloride pitting, so the PREN floor ${fl} (marginal below ${up}) is only a stand-in for "Mo-bearing austenitic or better" — production needs OEM/medium-specific data. Stack parts (bipolar plates, porous transport layers) are coated titanium and outside a stainless selector's scope; duplex grades are excluded on hydrogen-embrittlement grounds (ferrite phase — Sandia H₂ Technical Reference).<\/p>` : `
         <div class="env-grid">
           <div class="env-item env-cat"><b>Food-contact service<\/b><span class="tag">pathway<\/span><\/div>
           <div class="env-item"><b>indoor<\/b><span class="tag">exposure<\/span><\/div>
@@ -994,7 +1004,7 @@ window.GradeCompass = {
     const byKg = [...rows].sort((a, b) => a.rs_per_kg - b.rs_per_kg)[0];
     const byYear = [...rows].sort((a, b) => a.rs_per_kg_year - b.rs_per_kg_year)[0];
     el.innerHTML = `<table class="econ">
-      <thead><tr><th>Grade<\/th><th class="num-h">₹ / kg<\/th><th>Est. service life<\/th><th class="num-h">₹ / kg-year<\/th><\/tr><\/thead>
+      <thead><tr><th>Grade<\/th><th class="num-h">₹ / kg<\/th><th>Est. years to first major intervention<\/th><th class="num-h">₹ / kg-year<\/th><\/tr><\/thead>
       <tbody>${rows.map((r) => `
         <tr${r.grade === byYear.grade ? ' class="best"' : ""}>
           <td class="grade-cell"><b>${esc(r.grade)}<\/b><span class="fam">${FAMILY[E.GRADES[r.grade].family]}<\/span>${r.grade === byYear.grade ? '<span class="best-tag">CHEAPEST PER YEAR<\/span>' : ""}<\/td>
@@ -1006,7 +1016,7 @@ window.GradeCompass = {
     if (byKg.grade !== byYear.grade) {
       const saving = Math.round((1 - byYear.rs_per_kg_year / byKg.rs_per_kg_year) * 100);
       el.innerHTML += `<div class="inversion">${esc(byKg.grade)} reads cheap at ₹${fmt0(byKg.rs_per_kg)}/kg.
-        Repriced per year of service life in this environment, <b>${esc(byYear.grade)}<\/b> —
+        Repriced per year to first major intervention in this environment, <b>${esc(byYear.grade)}<\/b> —
         ₹${fmt0(byYear.rs_per_kg - byKg.rs_per_kg)}/kg more up front — is <b>~${saving}% cheaper per year<\/b>.
         Steel isn't priced this way anywhere in the trade.
         <span class="tag">Preliminary engine output · indicative pricing · uncertainty labelled<\/span><\/div>`;
