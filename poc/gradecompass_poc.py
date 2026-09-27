@@ -48,14 +48,14 @@ import time
 # max_temp = conservative oxidation limit in deg C = the LOWER of the commonly
 # published continuous / intermittent figures (304/316: 870 intermittent, 925
 # continuous; 430: 815/870; 409: 675/815; 310: 1035/1150). Duplex capped ~300C (ASME limit
-# 316C; 475C embrittlement). 439 and 904L limits are approximate.
+# 316C; 475C embrittlement). 439: 815 (lower of published 815 / Atlas 870 continuous); 904L approximate.
 
 GRADES = {
     "409":  dict(family="ferritic",   pren=10.5, ys=170, cost=0.90, form=3, weld=3, max_temp=675,  mo=0.0, l_grade=False, stabilized=True,
                  tags={"exhaust"}),
     "430":  dict(family="ferritic",   pren=16.5, ys=205, cost=1.00, form=3, weld=2, max_temp=815,  mo=0.0, l_grade=False, stabilized=False,
                  tags={"interior", "appliance", "kitchen_panel"}),
-    "439":  dict(family="ferritic",   pren=17.5, ys=205, cost=1.05, form=3, weld=3, max_temp=845,  mo=0.0, l_grade=False, stabilized=True,
+    "439":  dict(family="ferritic",   pren=17.5, ys=205, cost=1.05, form=3, weld=3, max_temp=815,  mo=0.0, l_grade=False, stabilized=True,
                  tags={"exhaust"}),
     "202":  dict(family="austenitic200", pren=18.0, ys=260, cost=1.10, form=4, weld=3, max_temp=815, mo=0.0, l_grade=False, stabilized=False,
                  tags={"utensil_bis", "furniture", "interior"}),
@@ -165,7 +165,7 @@ APPLICATIONS = {
     "pem_electrolyzer": dict(tag="electrolyzer",  profile=(0.7, 0.1, 0.2), chemical=True, welded=True, temp=80,
                              override=dict(floor=(24, 30),
                                            label="chemical service (alloy-content floor: PREN 24, target 30)",
-                                           display="chemical (PEM balance-of-plant: high-purity water + O2, 80C, H2 side) -- atmospheric pathway overridden"),
+                                           display="chemical (PEM balance-of-plant: high-purity water + O2, 60-80C, H2 side) -- atmospheric pathway overridden"),
                              exclude={"duplex": "hydrogen-assisted fracture risk in the ferrite phase (Sandia H2 Technical Reference); not offered for H2-wetted service"}),
     # internal=True: enclosed internal service (exhaust gas path) -- the
     # atmospheric pitting floor does not apply. This flag was ADDED after the
@@ -266,8 +266,8 @@ def eliminate(app_key, category, welded, service_temp):
         # but stagnation control (drain/dry within days) is the primary
         # defence and MIC is recorded in 316L too (Nickel Institute 10085).
         if app.get("mic") and g["mo"] < 2.0:
-            log.append(f"  x {name} eliminated: MIC risk in stagnant water: Mo-free grade (Mo {g['mo']}% < 2%) not offered; "
-                       f"Mo-bearing grades resist MIC better, but biocide dosing and stagnation control remain mandatory for any grade")
+            log.append(f"  x {name} eliminated: MIC screen (prototype house rule, not a standard threshold): Mo {g['mo']}% < 2%, so not offered for basin service here; "
+                       f"treated 304L basins exist in practice, and biocide dosing and stagnation control remain mandatory for any grade")
             continue
         survivors.append(name)
         if g["pren"] < upper:

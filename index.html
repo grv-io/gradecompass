@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>GradeCompass</title>
-<meta name="description" content="GradeCompass — a deterministic stainless steel grade selector that works backwards from the environment: location and application in, grade, elimination trail and cost per service-year out. Proof-of-concept built for Jindal Stainless (Stainless Spark 2026, Problem Statement 2).">
+<meta name="description" content="GradeCompass — a deterministic stainless steel grade selector that works backwards from the environment: location and application in, grade, elimination trail and cost per service-year out. Hackathon entry for Stainless Spark 2026 by Jindal Stainless (Problem Statement 2), Team GradeCompass, MNIT Jaipur.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23191B1E'/%3E%3Cpath d='M16 4 L19 16 L16 28 L13 16 Z' fill='%23FBFAF7'/%3E%3Cpath d='M4 16 L16 13 L28 16 L16 19 Z' fill='%23A63A26'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -24,17 +24,18 @@
     --ink: #191B1E;
     --ink-2: #4A4E54;
     --sec: #6E7176;
-    --muted: #6B6E73;   /* 4.9:1 on paper — captions must pass WCAG AA */
+    --muted: #62656A;   /* 5.0:1 on the tinted row — captions must pass WCAG AA */
+    --control-border: #8F9197;   /* 3.15:1 on white for input boundaries (WCAG 1.4.11) */
     --red: #A63A26;
     --red-dark: #7E2B1C;
     --red-soft: #E88B74;
     --green: #2E6B4F;
-    --amber: #9A6B1F;
+    --amber: #8A5F1C;   /* 4.85:1 on the tinted caution box */
     --on-dark: #FBFAF7;
     --on-dark-sec: #C9C6BE;
     --mast-h: 80px;
   }
-  @font-face { font-family: "Newsreader Fallback"; src: local("Georgia"); size-adjust: 94%; ascent-override: 92%; }
+  @font-face { font-family: "Newsreader Fallback"; src: local("Georgia"); size-adjust: 101%; ascent-override: 92%; }
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
   body {
@@ -93,7 +94,7 @@
   }
   .preset:hover { border-color: var(--ink); color: var(--ink); }
   .preset[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--on-dark); }
-  :is(.preset, select, input, button, summary, [tabindex="0"]):focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  :is(.preset, select, input, button, summary, a, textarea):focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 
   /* ---------- layout ---------- */
   .app { display: grid; grid-template-columns: 296px minmax(0, 1fr); gap: 22px; align-items: start; }
@@ -120,7 +121,7 @@
   .field > label, .field > .field-label { font-family: "Spline Sans Mono", Consolas, monospace; font-size: 9.5px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sec); }
   select {
     width: 100%; font: inherit; font-size: 14px; color: var(--ink);
-    background: var(--panel); border: 1px solid var(--rule); border-radius: 2px;
+    background: var(--panel); border: 1px solid var(--control-border); border-radius: 2px;
     padding: 8px 10px;
   }
   select:disabled { color: var(--muted); background: var(--panel-tint); }
@@ -145,7 +146,7 @@
     font-size: clamp(38px, 5vw, 52px); line-height: 0.95; color: var(--ink);
   }
   .reco-family { font-size: 12.5px; color: var(--sec); }
-  .reco-stats { display: flex; flex-wrap: wrap; gap: 10px 26px; margin-left: auto; }
+  .reco-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, max-content)); gap: 10px 22px; margin-left: auto; }
   .reco-stat { display: grid; gap: 1px; justify-items: start; }
   .reco-stat b { font-family: "Spline Sans Mono", Consolas, monospace; font-size: 19px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
   .reco-why { margin-top: 12px; font-size: 14px; color: var(--ink); max-width: 80ch; }
@@ -205,6 +206,7 @@
   .chart-wrap { position: relative; }
   .chart-svg { width: 100%; height: auto; display: block; }
   .chart-svg [data-i]:focus { outline: none; }
+  .chart-svg [data-i]:focus-visible { stroke: var(--ink); stroke-width: 2; }
   .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 10px; font-size: 12px; color: var(--ink-2); align-items: center; }
   .legend .key { display: inline-flex; align-items: center; gap: 7px; }
   .legend svg { display: block; }
@@ -248,9 +250,10 @@
   .best-tag { font-family: "Spline Sans Mono", Consolas, monospace; font-size: 9px; font-weight: 700; letter-spacing: 0.1em; color: var(--ink); margin-left: 10px; border: 1px solid var(--rule); padding: 1.5px 6px; white-space: nowrap; }
   .kg-in {
     width: 5.2em; font: inherit; font-family: "Spline Sans Mono", Consolas, monospace; font-size: 13px; text-align: right;
-    border: 1px solid var(--rule); border-radius: 2px; padding: 3px 5px; background: var(--panel); color: var(--ink);
+    border: 1px solid var(--control-border); border-radius: 2px; padding: 3px 5px; background: var(--panel); color: var(--ink);
     font-variant-numeric: tabular-nums;
   }
+  .econ .short { display: none; }
   .kg-in.edited { border-color: var(--amber); background: #FBF5E8; }
   .inversion {
     margin-top: 14px; padding: 14px 16px; background: var(--ink); color: var(--on-dark);
@@ -284,7 +287,7 @@
   dialog.esc .dlg-head .eyebrow { font-family: "Spline Sans Mono", Consolas, monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--red); margin: 0; }
   dialog.esc .dlg-body { padding: 14px 16px; }
   dialog.esc p { margin: 0 0 10px; font-size: 13px; color: var(--ink-2); }
-  dialog.esc textarea { width: 100%; min-height: 240px; font-family: "Spline Sans Mono", Consolas, monospace; font-size: 11.5px; line-height: 1.45; border: 1px solid var(--rule); padding: 10px; background: var(--panel-tint); color: var(--ink); resize: vertical; }
+  dialog.esc textarea { width: 100%; min-height: 240px; font-family: "Spline Sans Mono", Consolas, monospace; font-size: 11.5px; line-height: 1.45; border: 1px solid var(--control-border); padding: 10px; background: var(--panel-tint); color: var(--ink); resize: vertical; }
 
   /* evidence band */
   .validation-band {
@@ -323,29 +326,50 @@
     .rail { position: static; }
     .masthead { position: static; margin-bottom: 12px; }
   }
+  @media (max-width: 720px) {
+    .mast-sub { display: none; }
+    .how-body { display: none; }
+    .howto { gap: 4px; margin: 10px 0 4px; }
+    .presets { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px; scrollbar-width: thin; }
+    .preset { flex: 0 0 auto; }
+  }
   @media (max-width: 620px) {
     .elim-row { grid-template-columns: 118px 1fr; }
     .elim-reason { grid-column: 1 / -1; padding-bottom: 2px; }
     .mast-meta { margin-left: 0; text-align: left; justify-items: start; }
-    table.econ { font-size: 13px; }
-    .econ th, .econ td { padding-left: 6px; padding-right: 6px; }
+    table.econ { font-size: 13px; table-layout: fixed; }
+    .econ th:nth-child(1), .econ td:nth-child(1) { width: 30%; }
+    .econ th:nth-child(2), .econ td:nth-child(2) { width: 24%; }
+    .econ th:nth-child(3), .econ td:nth-child(3) { width: 24%; font-size: 12px; }
+    .econ th:nth-child(4), .econ td:nth-child(4) { width: 22%; }
+    .econ th, .econ td { padding-left: 5px; padding-right: 5px; }
     .econ th:first-child, .econ td:first-child { padding-left: 0; }
     .econ th:last-child, .econ td:last-child { padding-right: 0; }
     .econ .grade-cell { display: grid; justify-items: start; gap: 3px; }
-    .econ .fam, .best-tag { margin-left: 0; }
+    .econ .fam { display: none; }
+    .best-tag { margin-left: 0; font-size: 8px; padding: 1px 4px; }
+    .econ td.num { white-space: nowrap; }
+    .econ .rs { display: none; }
+    .econ .long { display: none; }
+    .econ .short { display: inline; }
+    .kg-in { width: 4.6em; padding: 3px 4px; }
     .rank-row { grid-template-columns: 52px minmax(0, 1fr) 96px; }
   }
 
   /* ---------- print: the decision record ---------- */
   @media print {
+    @page { size: A4; margin: 14mm; }
     body { padding: 0; max-width: none; font-size: 12px; background: #fff; }
     .masthead { position: static; }
-    .howto, .presets, .rail-footnote, .btn-row, .validation-band, #limits-block, details.payload, .tip, .legend, .kg-hint { display: none !important; }
+    .howto, .presets, .rail-footnote, .btn-row, .validation-band, #limits-block, details.payload, .tip, .kg-hint,
+    .field-note, #weld-note, #district-note, #kg-reset { display: none !important; }
     .app { display: block; }
     .rail { position: static; margin-bottom: 12px; }
     .block { break-inside: avoid; border-color: #bbb; }
+    select, input[type="range"], .kg-in { border: 0; background: none; appearance: none; -webkit-appearance: none; -moz-appearance: textfield; padding: 0; }
     .inversion { background: #fff !important; color: #000 !important; border: 1px solid #000; }
     .inversion b, .inversion .big { color: #000 !important; }
+    .inversion .tag { color: #555 !important; opacity: 1; }
     footer { max-width: none; }
   }
 </style>
@@ -357,18 +381,18 @@
     <h1 class="wordmark">GradeCompass</h1>
     <div class="mast-sub">Stainless grade selection worked backwards from the environment: location and application in — grade, elimination trail and cost per service-year out.</div>
     <div class="mast-meta">
-      <span class="built">Proof-of-concept built for <b>Jindal Stainless</b> · Stainless Spark 2026 · Problem Statement 2</span>
+      <span class="built">Hackathon entry · Stainless Spark 2026 by Jindal Stainless · Problem Statement 2 · <b>Team GradeCompass, MNIT Jaipur</b></span>
       <span class="tag">Deterministic engine · 12 grades · 12 districts · 7 applications · <span id="engine-ms">—</span></span>
     </div>
   </div>
   <div class="bar"></div><div class="bar"></div>
 </header>
 
-<div class="howto" aria-label="How it works">
-  <div class="how"><span class="n">1</span><span><b>Fingerprint the environment.</b> The district gives an ISO 9223-style corrosivity class; chemical and food-contact uses follow their own service pathway.</span></div>
-  <div class="how"><span class="n">2</span><span><b>Failure modes veto grades.</b> Pitting floor, service temperature, weld sensitisation, microbial attack and hydrogen embrittlement eliminate — a range class eliminates on its lower bound and warns on its upper.</span></div>
-  <div class="how"><span class="n">3</span><span><b>Rank what survives, then reprice per year.</b> No grade → the enquiry escalates with the trail attached; a constraint is never silently relaxed.</span></div>
-</div>
+<section class="howto" aria-label="How it works">
+  <div class="how"><span class="n">1</span><span><b>Fingerprint the environment.</b><span class="how-body"> The district gives an ISO 9223-style corrosivity class; chemical and food-contact uses follow their own service pathway.</span></span></div>
+  <div class="how"><span class="n">2</span><span><b>Failure modes veto grades.</b><span class="how-body"> Pitting, service temperature, weld sensitisation, microbial attack and hydrogen embrittlement each eliminate; a borderline class warns instead of passing silently.</span></span></div>
+  <div class="how"><span class="n">3</span><span><b>Rank what survives, then reprice per year.</b><span class="how-body"> No grade → the enquiry escalates with the trail attached; a constraint is never silently relaxed.</span></span></div>
+</section>
 
 <div class="presets" id="presets" role="group" aria-labelledby="presets-label">
   <span class="tag" id="presets-label">Scenarios</span>
@@ -405,8 +429,7 @@
     </section>
     <div class="rail-footnote">
       No metallurgy is asked of the buyer: the engine derives the corrosivity class from the
-      district and the requirements from the application. Every change re-runs all three
-      layers; the address bar carries the scenario, so any state can be shared as a link.
+      district and the requirements from the application, and every change re-runs all three layers.
     </div>
   </div>
 
@@ -477,21 +500,21 @@
   <div class="block-body">
     <div class="limits">
       <details><summary>Subset scope <span class="short">12 grades · 12 districts · 7 applications</span></summary>
-        <p>The production build covers Jindal's full catalogue (120+ grades) and all ~800 Indian districts with the same engine logic. Nothing here is a Jindal proprietary grade; production loads them from mill test certificates.</p></details>
+        <p>Of the 12 catalogue grades, 10 are reachable by the 7 demo applications (430 and 321 carry tags no demo application uses). The production build covers Jindal's full catalogue (120+ grades) and all ~800 Indian districts with the same engine logic. Nothing here is a Jindal proprietary grade; production loads them from mill test certificates.</p></details>
       <details><summary>Curated candidate lists <span class="short">tags do most of the narrowing at this size</span></summary>
-        <p>A query only considers grades tagged as relevant to that application, so elimination chooses among 2–5 candidates and the tag list, not the failure-mode rules, does most of the narrowing. With the full catalogue the rules carry far more of the decision.</p></details>
+        <p>A query only considers grades tagged as relevant to that application, so elimination chooses among 1–5 candidates and the tag list, not the failure-mode rules, does most of the narrowing. With the full catalogue the rules carry far more of the decision.</p></details>
       <details><summary>Hand-compiled environment data <span class="short">approximate normals, not a pipeline</span></summary>
         <p>Each district's fingerprint (distance to coast from the city centre, day-mean RH, annual rainfall, an SO₂ level flag) was curated from published climate records and is boundary-sensitive. Production computes these from IMD, ERA5, CPCB and CSIR-CECRI data.</p></details>
       <details><summary>Proxy corrosivity classifier <span class="short">six rules, not ISO 9223 dose-response</span></summary>
-        <p>The class is an ISO 9223-style proxy from a six-rule set on coast, humidity, rainfall and SO₂; ISO 9223 itself has no hybrid classes and derives C1–CX from time-of-wetness, SO₂ and chloride deposition. Within 5 km of the coast SO₂ is not used, so Visakhapatnam and Goa share a class, and no district in this subset reaches C5-plus or CX. Sheltered and washed exposures are not distinguished.</p></details>
+        <p>The class is an ISO 9223-style proxy from a six-rule set on coast, humidity, rainfall and SO₂; ISO 9223 itself has no hybrid classes and derives C1–CX from time-of-wetness, SO₂ and chloride deposition. Within 5 km of the coast SO₂ is not used, so Visakhapatnam and Goa share a class. Mumbai (Marine Drive) is the only C5, and in this subset C5 shares the C4–C5 floor of 24 / target 30, so the PREN-30 floor (CX) never fires. Sheltered and washed exposures are not distinguished.</p></details>
       <details><summary>Partial failure-mode registry <span class="short">5 active, 4 registered</span></summary>
-        <p>Active: pitting floor, service temperature, weld sensitisation (300-series non-L grades only; 202 and 430 weld-zone effects are not yet modelled), microbial (MIC) screening and a hydrogen-embrittlement family exclusion. Stress-corrosion cracking, crevice, galvanic and erosion–corrosion are registered but not enforced.</p></details>
+        <p>Active: pitting floor, service temperature, weld sensitisation (300-series non-L grades only; 202 and 430 weld-zone effects are not yet modelled), a microbial (MIC) screen and a hydrogen-embrittlement family exclusion. The MIC screen (Mo ≥ 2% for basin service) is a prototype house rule, not a standard threshold — treated 304L basins exist in practice and 316L is not immune (Nickel Institute 10085). Stress-corrosion cracking, crevice, galvanic and erosion–corrosion are registered but not enforced.</p></details>
       <details><summary>Indicative economics <span class="short">ex-mill ratios · engineering-judgment life bands</span></summary>
-        <p>₹/kg uses a fixed ₹175 baseline for grade 430 with indicative ex-mill cost ratios, not live market or Stainless Mart prices. Domestic stockist quotes for thinly traded grades run higher (2205 ≈ ₹450–650/kg against ₹315 here), which is why the table lets you overwrite any price and shows the break-even. Service life is a four-band engineering-judgment estimate from PREN margin, applied only to atmospheric exposure; no ISO service-life model exists for stainless steel (ISO 9224 covers carbon steel, zinc, copper and aluminium). Maintenance regime is not an input. Treat ₹/kg-year as directional, not quotable.</p></details>
+        <p>₹/kg uses a fixed ₹175 baseline for grade 430 with indicative ex-mill cost ratios, not live market or Stainless Mart prices. Domestic stockist quotes for thinly traded grades run higher (2205 ≈ ₹450–650/kg against ₹315 here), which is why the table lets you overwrite any price and shows the break-even. Service life is a four-band engineering-judgment estimate from PREN margin over the environment's upper target (margin ≥ 10 → 25+ yrs; ≥ 5 → 20–25; ≥ 0 → 15–20; below 0 → 8–15 with periodic maintenance; C3 and milder → 25+ for every passing grade), applied to atmospheric exposure and, as a stated proxy, to cooling-tower basins. "First major intervention" means re-polishing or partial replacement for pitting, not cosmetic tarnish, so a field note on early tarnish (Surat) does not shorten a band. No ISO service-life model exists for stainless steel (ISO 9224 covers carbon steel, zinc, copper and aluminium) and maintenance regime is not an input. Treat ₹/kg-year as directional, not quotable.</p></details>
       <details><summary>Nominal-composition properties <span class="short">not per-heat data</span></summary>
         <p>PREN is computed at nominal ASTM A240 composition (202 deliberately at the low end to cover Indian Cr–Mn variants); yield strengths are A240 minima; temperature limits are the lower of published continuous/intermittent figures. PREN is a comparative screening index — real performance also depends on finish, crevice geometry, temperature and maintenance.</p></details>
       <details><summary>Unvalidated ranking weights <span class="short">judgment, pending panel calibration</span></summary>
-        <p>Scoring weights, the marginal penalty and the cost-sensitivity mapping are engineering judgment; about a quarter of all input combinations are close calls (top-two gap under 0.03), which the page now says out loud. The production build calibrates against a 200+ scenario suite scored by a Jindal metallurgist panel (target ≥ 95% top-3 agreement).</p></details>
+        <p>Scoring weights, the marginal penalty and the cost-sensitivity mapping are engineering judgment; about half of all input combinations are close calls (347 of 756 runs have a top-two gap under 0.03), which the page says out loud, and at the CRITICAL cost setting a cautioned grade can outrank a clean one (87 of 756 runs) because cautions are soft — only the hard vetoes cannot be out-weighted. The production build calibrates against a 200+ scenario suite scored by a Jindal metallurgist panel (target ≥ 95% top-3 agreement).</p></details>
       <details><summary>No certification checks yet <span class="short">BIS / ASME / RDSO as tags only</span></summary>
         <p>Compliance appears only as curated application tags; production validates against a certification registry per grade and product form.</p></details>
       <details><summary>Demonstration architecture <span class="short">engine inlined in this page</span></summary>
@@ -505,15 +528,15 @@
   Prices are indicative (₹175/kg at the 430 baseline); lifetime bands are engineering-judgment estimates, not a standards model.
   For critical applications, confirm with Jindal's technical advisory team. Preliminary engine on a 12-grade / 12-district
   subset; the production build extends to 120+ grades and ~800 districts with metallurgist-validated accuracy.</p>
-  <p class="standards">Informed by · ISO 9223 (proxy class) · EN 1993-1-4 Annex A (CRC calibration) · BIS IS 5522 / IS 15997 / IS 14756 · IMOA guidance · ASTM A240 · Sandia H₂ Technical Reference</p>
+  <p class="standards">Informed by · ISO 9223 (proxy class) · EN 1993-1-4 Annex A (CRC calibration) · BIS IS 5522 / IS 15997 / IS 14756 · IMOA guidance · ASTM A240 · Nickel Institute 10085 (MIC) · Sandia H₂ Technical Reference</p>
   <p class="team">Team GradeCompass — Gaurav Agrawal · Ritesh Kumar Singh · MNIT Jaipur. Code and parity test: <a href="https://github.com/grv-io/gradecompass" rel="noopener">github.com/grv-io/gradecompass</a>.</p>
 </footer>
 
 <dialog class="esc" id="esc-dialog" aria-labelledby="esc-title">
   <div class="dlg-head"><h2 class="eyebrow" id="esc-title">Escalate to Jindal technical advisory</h2></div>
   <div class="dlg-body">
-    <p>The record below is what production attaches to the enquiry: inputs, environment fingerprint, the full elimination trail and the ranking. In this demo it opens in your own mail client with no recipient set; nothing is sent from this page.</p>
-    <textarea id="esc-text" readonly></textarea>
+    <p>This record is what production attaches to the enquiry. The demo opens it in your own mail client with no recipient; nothing is sent from this page.</p>
+    <textarea id="esc-text" readonly aria-label="Escalation record"></textarea>
     <div class="btn-row">
       <a class="btn primary" id="esc-mail" href="#">Open in email</a>
       <button type="button" class="btn" id="esc-copy">Copy record</button>
@@ -531,7 +554,7 @@
 const GRADES = {
   "409":  { family: "ferritic",         pren: 10.5, ys: 170, cost: 0.90, form: 3, weld: 3, maxTemp: 675,  mo: 0.0, lGrade: false, stabilized: true,  tags: ["exhaust"] },
   "430":  { family: "ferritic",         pren: 16.5, ys: 205, cost: 1.00, form: 3, weld: 2, maxTemp: 815,  mo: 0.0, lGrade: false, stabilized: false, tags: ["interior", "appliance", "kitchen_panel"] },
-  "439":  { family: "ferritic",         pren: 17.5, ys: 205, cost: 1.05, form: 3, weld: 3, maxTemp: 845,  mo: 0.0, lGrade: false, stabilized: true,  tags: ["exhaust"] },
+  "439":  { family: "ferritic",         pren: 17.5, ys: 205, cost: 1.05, form: 3, weld: 3, maxTemp: 815,  mo: 0.0, lGrade: false, stabilized: true,  tags: ["exhaust"] },
   "202":  { family: "austenitic200",    pren: 18.0, ys: 260, cost: 1.10, form: 4, weld: 3, maxTemp: 815,  mo: 0.0, lGrade: false, stabilized: false, tags: ["utensil_bis", "furniture", "interior"] },
   "304":  { family: "austenitic300",    pren: 19.0, ys: 205, cost: 1.30, form: 5, weld: 4, maxTemp: 870,  mo: 0.0, lGrade: false, stabilized: false, tags: ["utensil_bis", "railing", "interior", "railway_rdso", "food_processing", "facade"] },
   "304L": { family: "austenitic300",    pren: 19.0, ys: 170, cost: 1.35, form: 5, weld: 5, maxTemp: 870,  mo: 0.0, lGrade: true,  stabilized: false, tags: ["food_processing", "water_treatment", "railing", "railway_rdso"] },
@@ -588,7 +611,7 @@ const APPLICATIONS = {
                display: "food-contact service (washed, indoor) -- atmospheric pathway not applicable" } },
   pem_electrolyzer: { tag: "electrolyzer",    profile: [0.7, 0.1, 0.2], chemical: true, welded: true, temp: 80,
    override: { floor: [24, 30], label: "chemical service (alloy-content floor: PREN 24, target 30)",
-               display: "chemical (PEM balance-of-plant: high-purity water + O2, 80C, H2 side) -- atmospheric pathway overridden" },
+               display: "chemical (PEM balance-of-plant: high-purity water + O2, 60-80C, H2 side) -- atmospheric pathway overridden" },
    exclude: { duplex: "hydrogen-assisted fracture risk in the ferrite phase (Sandia H2 Technical Reference); not offered for H2-wetted service" } },
   auto_exhaust:     { tag: "exhaust",         profile: [0.6, 0.3, 0.1], temp: 650, internal: true },  // cold end (muffler / tailpipe)
   cooling_tower:    { tag: "water_treatment", profile: [0.6, 0.2, 0.2], mic: true, welded: true },
@@ -649,7 +672,7 @@ function eliminate(appKey, category, welded, serviceTemp) {
         if (hard >= 18) weldCaution = true;
       }
     if (app.mic && g.mo < 2.0) {
-      log.push(`  x ${name} eliminated: MIC risk in stagnant water: Mo-free grade (Mo ${g.mo.toFixed(1)}% < 2%) not offered; Mo-bearing grades resist MIC better, but biocide dosing and stagnation control remain mandatory for any grade`);
+      log.push(`  x ${name} eliminated: MIC screen (prototype house rule, not a standard threshold): Mo ${g.mo.toFixed(1)}% < 2%, so not offered for basin service here; treated 304L basins exist in practice, and biocide dosing and stagnation control remain mandatory for any grade`);
       continue;
     }
     survivors.push(name);
@@ -794,7 +817,7 @@ window.GradeCompass = {
     outdoor_railing:  "Outdoor railing / balustrade",
     kitchen_utensils: "Kitchen utensils (BIS)",
     pem_electrolyzer: "PEM electrolyser balance-of-plant (green hydrogen)",
-    auto_exhaust:     "Automotive exhaust, cold end (muffler / tailpipe)",
+    auto_exhaust:     "Automotive exhaust, cold end (centre pipe / muffler)",
     cooling_tower:    "Cooling tower basin",
     metro_interior:   "Metro coach interior fittings",
     furnace_liner:    "Furnace liner, 1,200 °C",
@@ -820,7 +843,7 @@ window.GradeCompass = {
     { label: "Pune exhaust",                    app: "auto_exhaust",     district: "Pune",        cost: "high" },
     { label: "Chennai cooling tower",           app: "cooling_tower",    district: "Chennai",     cost: "high" },
     { label: "Delhi metro",                     app: "metro_interior",   district: "Delhi",       cost: "medium" },
-    { label: "Furnace 1,200 °C → no match",     app: "furnace_liner",    district: "Delhi",       cost: "low" },
+    { label: "Furnace 1,200 °C (escalates)",     app: "furnace_liner",    district: "Delhi",       cost: "low" },
   ];
 
   const fmt0 = (x) => x.toLocaleString("en-IN", { maximumFractionDigits: 0 });
@@ -855,15 +878,23 @@ window.GradeCompass = {
     const ov = app.override;
     distSel.disabled = Boolean(ov);
     $("district-note").hidden = !ov;
-    $("weld-note").hidden = appSel.value !== "outdoor_railing";
+    updateWeldNote();
     if (ov) $("district-note").textContent = app.chemical
       ? "Environment set by the PEM service medium (high-purity water + O₂, 60–80 °C, H₂ side), not by location."
       : "Utensils are used and washed indoors: eligibility follows food-contact/BIS practice, not the district\'s outdoor corrosivity.";
   }
 
+  function updateWeldNote() {
+    const note = $("weld-note");
+    const goaRail = appSel.value === "outdoor_railing" && distSel.value === "Panaji, Goa";
+    note.hidden = !goaRail;
+    if (goaRail) note.textContent = weldBox.checked
+      ? "316 eliminated: non-L grades sensitise at the weld in C4-C5; 316L moves up."
+      : "Tick this: 316 is eliminated for weld sensitisation and 316L moves up.";
+  }
   appSel.addEventListener("change", () => { onAppChange(); update(); });
-  distSel.addEventListener("change", () => update());
-  weldBox.addEventListener("change", () => update());
+  distSel.addEventListener("change", () => { updateWeldNote(); update(); });
+  weldBox.addEventListener("change", () => { updateWeldNote(); update(); });
   costRange.addEventListener("input", () => update());
 
   /* ----- wording helpers ----- */
@@ -912,8 +943,8 @@ window.GradeCompass = {
     const groups = {};
     for (const [n, reason] of Object.entries(log.eliminated)) (groups[reasonKind(reason)] = groups[reasonKind(reason)] || []).push(n);
     const parts = [];
-    const where = app.override ? "This is" : `${result.input.location} is`;
-    parts.push(`${where} ${catPhrase(result)}.`);
+    if (app.internal) parts.push(`Enclosed exhaust-gas service: no atmospheric pitting floor applies, so candidates are screened on the ${fmt0(result.input.service_temp)} °C cold-end temperature instead.`);
+    else parts.push(`${app.override ? "This is" : `${result.input.location} is`} ${catPhrase(result)}.`);
     const elimSentences = Object.entries(groups).map(([k, names]) => KIND_TEXT[k](names, result));
     if (elimSentences.length) parts.push(elimSentences.join("; ") + ".");
     const margs = Object.keys(log.marginal).filter((n) => n !== rec.grade);
@@ -943,9 +974,9 @@ window.GradeCompass = {
       el.className = "block reco none";
       el.innerHTML = `
         <span class="reco-eyebrow">No grade meets all constraints</span>
-        <div class="reco-row"><span class="reco-grade" style="font-size:26px;line-height:1.2">Escalated to Jindal technical team</span></div>
-        <div class="reco-why">Nothing in this catalogue satisfies every requirement for this context (every furnace candidate fails the
-        1,200 °C limit). The engine never silently relaxes a constraint — the enquiry goes to a Jindal expert with the
+        <div class="reco-row"><span class="reco-grade" style="font-size:26px;line-height:1.2">Escalate to Jindal technical team</span></div>
+        <div class="reco-why">Nothing in this catalogue satisfies every requirement for this context${result.input.service_temp && Object.values(parseLog(result).eliminated).every((r) => reasonKind(r) === "temp") ? ` (every candidate fails the ${fmt0(result.input.service_temp)} °C limit)` : ""}.
+        The engine never silently relaxes a constraint — the enquiry goes to a Jindal expert with the
         full context and elimination trail attached.</div>
         <div class="btn-row"><button type="button" class="btn primary" data-escalate>Escalate with this trail</button></div>`;
       $("live-status").textContent = "No grade meets all constraints; escalated.";
@@ -958,7 +989,7 @@ window.GradeCompass = {
     el.className = "block reco";
     const stats = [
       `<div class="reco-stat"><b>${g.pren.toFixed(1)}</b><span class="tag">PREN</span></div>`,
-      `<div class="reco-stat"><b>₹${fmt0(myRow ? myRow.rs_per_kg : g.cost * E.BASE_COST_RS_PER_KG)}</b><span class="tag">per kg · indicative</span></div>`,
+      `<div class="reco-stat"><b>₹${fmt0(myRow ? myRow.rs_per_kg : g.cost * E.BASE_COST_RS_PER_KG)}</b><span class="tag">${myRow && myRow.edited ? "per kg · your price" : "per kg · indicative"}</span></div>`,
       `<div class="reco-stat"><b>${g.ys}</b><span class="tag">yield · MPa</span></div>`,
     ];
     if (myRow) {
@@ -974,7 +1005,17 @@ window.GradeCompass = {
     // over-specification check
     let overSpec = "";
     const cheaperClean = result.survivors.filter((n) => E.GRADES[n].cost < g.cost && !result.marginal.includes(n)).sort((a, b) => E.GRADES[a].cost - E.GRADES[b].cost)[0];
-    if (cheaperClean) overSpec = `<div class="note-line"><span class="mono">Over-spec check</span> &nbsp;${esc(cheaperClean)} also clears every active failure mode at ₹${fmt0(E.GRADES[cheaperClean].cost * E.BASE_COST_RS_PER_KG)}/kg; the premium for ${esc(rec.grade)} buys ${result.input.cost_sensitivity === "low" ? "strength and margin the ranking rewarded because cost was weighted low" : "margin, not eligibility"}.</div>`;
+    if (cheaperClean) {
+      // say what the premium actually bought, from the score components the ranker uses
+      const c = E.GRADES[cheaperClean], buys = [];
+      if (result.input.welded && g.lGrade && !c.lGrade) buys.push("weld-sensitisation insurance (L-grade)");
+      if (result.input.welded ? g.weld > c.weld : false) buys.push(`weldability (${g.weld} vs ${c.weld})`);
+      if (g.form > c.form) buys.push(`formability (${g.form} vs ${c.form})`);
+      if (g.ys > c.ys) buys.push(`yield strength (${g.ys} vs ${c.ys} MPa)`);
+      if (g.pren > c.pren) buys.push(`PREN margin (${g.pren.toFixed(1)} vs ${c.pren.toFixed(1)})`);
+      const what = buys.length ? buys.join(", ") : "nothing the ranker measures — it wins on the cost-weighted score alone";
+      overSpec = `<div class="note-line"><span class="mono">Over-spec check</span> &nbsp;${esc(cheaperClean)} also clears every active failure mode at ₹${fmt0(c.cost * E.BASE_COST_RS_PER_KG)}/kg; the premium for ${esc(rec.grade)} buys ${what}${result.input.cost_sensitivity === "low" ? " — rewarded here because cost is weighted low" : ""}.</div>`;
+    }
     else if (app.chemical && g.cost >= 2.5) overSpec = `<div class="note-line caution-line"><span class="mono">Over-spec check</span> &nbsp;316L is standard balance-of-plant practice in PEM water loops; ${esc(rec.grade)} ranks first only because cost is weighted low and 316L carries a marginal flag. Confirm the premium against OEM / medium data before specifying.</div>`;
     el.innerHTML = `
       <span class="reco-eyebrow">Recommended grade</span>
@@ -987,8 +1028,9 @@ window.GradeCompass = {
       </div>
       <div class="reco-why">${esc(plainWhy(result))}</div>
       <div class="reco-num">PREN ${g.pren.toFixed(1)}${app.internal ? "" : ` against ${esc(catShort(result))}`}; cost index ${g.cost.toFixed(2)}× the 430 baseline; formability ${g.form}/5, weldability ${g.weld}/5; rank score ${rec.score.toFixed(3)}.</div>
-      ${rec.marginal ? `<div class="note-line caution-line"><span class="mono">Caution</span> &nbsp;Marginal for the upper
-        bound of the corrosivity range — recommended only with this warning attached. <button type="button" class="btn" data-escalate style="margin-left:6px">Escalate to Jindal advisory</button></div>` : ""}
+      ${rec.marginal ? `<div class="note-line caution-line"><span class="mono">Caution</span> &nbsp;${app.override
+          ? `Below the alloy-content target (PREN ${result.environment.pren_upper_target}) used as a stand-in on this pathway — recommended only with this warning attached; confirm against OEM / medium data.`
+          : `Marginal for the upper bound of the corrosivity range — recommended only with this warning attached.`} <button type="button" class="btn" data-escalate style="margin-left:6px">Escalate to Jindal advisory</button></div>` : ""}
       ${closeCall}${overSpec}`;
     $("live-status").textContent = `Recommended: ${rec.grade}${rec.marginal ? ", marginal" : ""}.`;
   }
@@ -1019,16 +1061,20 @@ window.GradeCompass = {
     const floor = result.environment.pren_floor;
     el.innerHTML = `
       <div class="env-grid">
-        <div class="env-item env-cat"><b>${esc(catShort(result))}</b><span class="tag">ISO 9223-style proxy class · ${CAT_WORD[result.environment.category_raw] || ""} corrosivity</span></div>
+        <div class="env-item env-cat"><b>${app.internal ? "Enclosed exhaust gas" : esc(catShort(result))}</b><span class="tag">${app.internal ? "service pathway · location not used" : `ISO 9223-style proxy class · ${CAT_WORD[result.environment.category_raw] || ""} corrosivity`}</span></div>
         <div class="env-item"><b>${app.internal ? "n/a" : floor > 0 ? "≥ " + floor : "none"}</b><span class="tag">PREN floor</span></div>
         <div class="env-item"><b>${d.coast < 25 ? d.coast + " km" : "&gt; 25 km"}</b><span class="tag">to coastline</span></div>
         <div class="env-item"><b>${d.rh}%</b><span class="tag">mean RH · approx.</span></div>
         <div class="env-item"><b>${fmt0(d.rain)} mm</b><span class="tag">annual rainfall · approx.</span></div>
         <div class="env-item"><b>${SO2_LABEL[d.so2]}</b><span class="tag">SO₂ level</span></div>
       </div>
-      <p class="env-doc"><b>Field note — ${esc(result.input.location)} (team, unsourced):</b> ${esc(d.documented)}.</p>
       ${app.internal ? `<p class="env-doc">Enclosed internal service (exhaust-gas path): the atmospheric pitting
-        floor does not apply — grades are screened on service temperature (${result.input.service_temp} °C, cold end) instead.</p>` : ""}`;
+        floor does not apply — grades are screened on service temperature (${result.input.service_temp} °C, cold end: centre pipe / muffler) instead.
+        Condensate pitting at the cold end (the real 409-versus-439 decision) is not modelled in this prototype.</p>` :
+        `<p class="env-doc"><b>Field note — ${esc(result.input.location)} (team, unsourced):</b> ${esc(d.documented)}.</p>`}
+      ${app.mic ? `<p class="env-doc">Basin water is immersed service, not sea air: this prototype borrows the district's atmospheric class as a
+        proxy for chloride load in the basin and prices it with the atmospheric life bands. Production replaces this with water
+        chemistry (chloride ppm, cycles of concentration, temperature, biocide regime).</p>` : ""}`;
   }
 
   function consideredGrades(result) {
@@ -1098,7 +1144,8 @@ window.GradeCompass = {
     });
 
     const cw = wrap.clientWidth || 680, narrow = cw < 520;
-    const W = narrow ? Math.max(300, cw) : 680, H = narrow ? Math.round(W * 0.82) : 400;
+    // draw at the column width so 1 SVG unit = 1 CSS px (no shrunken axis text on laptops or phones)
+    const W = Math.max(300, cw), H = narrow ? Math.round(W * 0.82) : Math.round(Math.min(420, W * 0.62));
     const ML = narrow ? 38 : 50, MR = narrow ? 12 : 20, MT = 16, MB = 44;
     const xs = pts.map((p) => p.x), ys = pts.map((p) => p.y);
     let xLo = Math.min(...xs), xHi = Math.max(...xs);
@@ -1117,7 +1164,7 @@ window.GradeCompass = {
           RULE = "var(--rule)", RED = "var(--red)", AMBER = "var(--amber)", PAPER = "#FFFFFF";
 
     const xT = niceTicks(xLo, xHi, 6), yT = niceTicks(yLo, yHi, 6);
-    let s = `<svg class="chart-svg" viewBox="0 0 ${W} ${H}" role="group" aria-label="Scatter of candidate grades: material cost against PREN corrosion index. Each point is focusable." aria-describedby="rank-list">`;
+    let s = `<svg class="chart-svg" viewBox="0 0 ${W} ${H}" role="group" tabindex="-1" aria-label="Scatter of candidate grades: material cost against PREN corrosion index. Each point is focusable." aria-describedby="rank-list">`;
     for (const t of yT) s += `<line x1="${ML}" x2="${W - MR}" y1="${Y(t)}" y2="${Y(t)}" stroke="${GRID}" stroke-width="1"/>`;
     for (const t of xT) s += `<line y1="${MT}" y2="${H - MB}" x1="${X(t)}" x2="${X(t)}" stroke="${GRID}" stroke-width="1"/>`;
     s += `<line x1="${ML}" x2="${W - MR}" y1="${H - MB}" y2="${H - MB}" stroke="${RULE}" stroke-width="1"/>`;
@@ -1126,15 +1173,23 @@ window.GradeCompass = {
     s += `<text x="${(ML + W - MR) / 2}" y="${H - 6}" text-anchor="middle" font-size="11" fill="${SEC}">Material cost (₹/kg, indicative)</text>`;
     s += `<text x="13" y="${(MT + H - MB) / 2}" text-anchor="middle" font-size="11" fill="${SEC}" transform="rotate(-90 13 ${(MT + H - MB) / 2})">PREN — pitting resistance</text>`;
 
+    // obstacles for label placement: every point's circle plus the reference-line captions
+    const obstacles = [];
+    const CAP = 10.5, capW = (t) => t.length * (CAP * 0.72);
     const floorApplies = floor > 0 && !app.internal;
     if (floorApplies) {
+      const t1 = narrow ? `FLOOR ≥ ${floor}` : `ELIMINATION FLOOR · PREN ≥ ${floor}`;
       s += `<line x1="${ML}" x2="${W - MR}" y1="${Y(floor)}" y2="${Y(floor)}" stroke="${RED}" stroke-width="1.4" stroke-dasharray="6 4"/>`;
-      s += `<text x="${ML + 4}" y="${Y(floor) + 13}" text-anchor="start" font-size="9.5" font-weight="600" letter-spacing="1" fill="${RED}" font-family="'Spline Sans Mono', monospace">${narrow ? `FLOOR ≥ ${floor}` : `ELIMINATION FLOOR · PREN ≥ ${floor}`}</text>`;
+      s += `<text x="${W - MR - 4}" y="${Y(floor) + 13}" text-anchor="end" font-size="${CAP}" font-weight="600" letter-spacing="1" fill="${RED}" font-family="'Spline Sans Mono', monospace">${t1}</text>`;
+      obstacles.push({ x1: W - MR - 4 - capW(t1), x2: W - MR - 4, y1: Y(floor) + 2, y2: Y(floor) + 15 });
       if (upper > floor) {
+        const t2 = narrow ? `MARGINAL < ${upper}` : `MARGINAL BELOW PREN ${upper}`;
         s += `<line x1="${ML}" x2="${W - MR}" y1="${Y(upper)}" y2="${Y(upper)}" stroke="${AMBER}" stroke-width="1.3" stroke-dasharray="2 4"/>`;
-        s += `<text x="${ML + 4}" y="${Y(upper) - 5}" text-anchor="start" font-size="9.5" font-weight="600" letter-spacing="1" fill="${AMBER}" font-family="'Spline Sans Mono', monospace">${narrow ? `MARGINAL < ${upper}` : `MARGINAL BELOW PREN ${upper}`}</text>`;
+        s += `<text x="${W - MR - 4}" y="${Y(upper) - 5}" text-anchor="end" font-size="${CAP}" font-weight="600" letter-spacing="1" fill="${AMBER}" font-family="'Spline Sans Mono', monospace">${t2}</text>`;
+        obstacles.push({ x1: W - MR - 4 - capW(t2), x2: W - MR - 4, y1: Y(upper) - 16, y2: Y(upper) - 3 });
       }
     }
+    for (const p of pts) { const r = R(p.g.ys) + 4, cx = X(p.x), cy = Y(p.y); obstacles.push({ x1: cx - r, x2: cx + r, y1: cy - r, y2: cy + r, own: p.name }); }
 
     const front = result.pareto_frontier.map((n) => pts.find((p) => p.name === n)).filter(Boolean);
     if (front.length > 1) {
@@ -1142,13 +1197,10 @@ window.GradeCompass = {
       s += `<path d="${d}" fill="none" stroke="${SEC}" stroke-width="1.4" stroke-dasharray="1 5" stroke-linecap="round"/>`;
     }
 
-    // label placement: default above-right; if a lower-index point sits close, drop this label below
-    const placed = [];
+    // marks (largest first so small points stay on top), then labels placed around the obstacles
     const drawOrder = [...pts].sort((a, b) => b.g.ys - a.g.ys);
     for (const p of drawOrder) {
-      const r = R(p.g.ys);
-      const idx = considered.indexOf(p.name);
-      const cx = X(p.x), cy = Y(p.y);
+      const r = R(p.g.ys), cx = X(p.x), cy = Y(p.y);
       if (p.out) {
         s += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${MUTED}" stroke-width="1.7"/>`;
         s += `<line x1="${cx - r * 0.6}" y1="${cy - r * 0.6}" x2="${cx + r * 0.6}" y2="${cy + r * 0.6}" stroke="${MUTED}" stroke-width="1.5"/>`;
@@ -1157,13 +1209,26 @@ window.GradeCompass = {
         s += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${INK}" stroke="${PAPER}" stroke-width="2"/>`;
         if (p.marg) s += `<circle cx="${cx}" cy="${cy}" r="${r + 9}" fill="none" stroke="${AMBER}" stroke-width="1.5" stroke-dasharray="3 3"/>`;
       }
-      const rightEdge = cx > W - MR - 70;
-      let lx = rightEdge ? cx - r - 8 : cx + r + 8;
-      let ly = cy - r - 5;
-      const anchor = rightEdge ? "end" : "start";
-      if (placed.some((q) => Math.abs(q.x - lx) < 44 && Math.abs(q.y - ly) < 16)) ly = cy + r + 15;
-      placed.push({ x: lx, y: ly });
-      s += `<text x="${lx}" y="${ly}" text-anchor="${anchor}" font-size="12.5" font-weight="700" fill="${p.out ? MUTED : p.top ? RED : INK}" ${p.out ? 'text-decoration="line-through"' : ""}>${p.name}</text>`;
+    }
+    const hits = (a, b) => a.x1 < b.x2 && a.x2 > b.x1 && a.y1 < b.y2 && a.y2 > b.y1;
+    const LW = (t) => t.length * 8.2, LH = 13;
+    for (const p of pts) {
+      const r = R(p.g.ys), cx = X(p.x), cy = Y(p.y), w = LW(p.name);
+      const cands = [
+        { x: cx + r + 8, y: cy - r - 5, a: "start" }, { x: cx + r + 8, y: cy + r + 15, a: "start" },
+        { x: cx - r - 8, y: cy - r - 5, a: "end" },   { x: cx - r - 8, y: cy + r + 15, a: "end" },
+        { x: cx, y: cy - r - 14, a: "middle" },       { x: cx, y: cy + r + 22, a: "middle" },
+      ];
+      const rect = (c) => ({ x1: c.a === "end" ? c.x - w : c.a === "middle" ? c.x - w / 2 : c.x, x2: c.a === "end" ? c.x : c.a === "middle" ? c.x + w / 2 : c.x + w, y1: c.y - LH, y2: c.y + 2 });
+      const inside = (rc) => rc.x1 >= ML - 2 && rc.x2 <= W - 2 && rc.y1 >= 0 && rc.y2 <= H - MB + 2;
+      let pick = cands[0];
+      for (const c of cands) { const rc = rect(c); if (inside(rc) && !obstacles.some((o) => o.own !== p.name && hits(rc, o))) { pick = c; break; } }
+      obstacles.push({ ...rect(pick), own: "label" });
+      s += `<text x="${pick.x}" y="${pick.y}" text-anchor="${pick.a}" font-size="12.5" font-weight="700" fill="${p.out ? MUTED : p.top ? RED : INK}" ${p.out ? 'text-decoration="line-through"' : ""}>${p.name}</text>`;
+    }
+    // hit targets last, ordered by cost so keyboard focus walks left to right
+    for (const p of [...pts].sort((a, b) => a.x - b.x)) {
+      const r = R(p.g.ys), cx = X(p.x), cy = Y(p.y), idx = considered.indexOf(p.name);
       const status = p.out ? "eliminated" : p.marg ? "passes, marginal" : p.top ? "recommended" : "passes";
       s += `<circle cx="${cx}" cy="${cy}" r="${r + 9}" fill="transparent" data-i="${idx}" tabindex="0" role="img" aria-label="${p.name}: PREN ${p.g.pren.toFixed(1)}, ₹${fmt0(p.x)} per kg, yield ${p.g.ys} MPa, ${status}"/>`;
     }
@@ -1199,6 +1264,7 @@ window.GradeCompass = {
     };
     const pointCentre = (t) => { const b = t.getBoundingClientRect(); return [b.left + b.width / 2, b.top + b.height / 2]; };
     svgEl.addEventListener("pointermove", (ev) => {
+      if (ev.pointerType === "touch") return;
       const t = ev.target.closest("[data-i]");
       if (t) show(Number(t.dataset.i), ev.clientX, ev.clientY);
       else tip.hidden = true;
@@ -1206,8 +1272,9 @@ window.GradeCompass = {
     svgEl.addEventListener("pointerdown", (ev) => {
       const t = ev.target.closest("[data-i]");
       if (t) show(Number(t.dataset.i), ev.clientX, ev.clientY);
+      else tip.hidden = true;                       // a tap on empty chart dismisses
     });
-    svgEl.addEventListener("pointerleave", () => { tip.hidden = true; });
+    svgEl.addEventListener("pointerleave", (ev) => { if (ev.pointerType !== "touch") tip.hidden = true; });
     svgEl.addEventListener("focusin", (ev) => { const t = ev.target.closest("[data-i]"); if (t) { const [x, y] = pointCentre(t); show(Number(t.dataset.i), x, y); } });
     svgEl.addEventListener("focusout", () => { tip.hidden = true; });
   }
@@ -1225,7 +1292,8 @@ window.GradeCompass = {
       </div>`;
     }).join("");
     const w = E.COST_WEIGHT[result.input.cost_sensitivity];
-    $("rank-foot").textContent = `Weighted score over survivors only: cost ${Math.round(w * 100)}%, the rest split across requirement satisfaction (1.0, or 0.7 if marginal), fabricability and strength by application profile. Corrosion is a pass/fail requirement here, never a maximised property.`;
+    const cautionedFirst = result.marginal.includes(result.ranking[0].grade) && result.survivors.some((s) => !result.marginal.includes(s));
+    $("rank-foot").textContent = `Weighted score over survivors only: cost ${Math.round(w * 100)}%, the rest split across requirement satisfaction (1.0, or 0.7 if marginal), fabricability and strength by application profile. Corrosion is pass/fail with a single marginal penalty, never a maximised property.${cautionedFirst ? " A cautioned grade is ranked above a clean one here: cautions are soft weights, only the hard vetoes cannot be out-weighted." : ""}`;
   }
 
   function renderEconomics(result) {
@@ -1255,11 +1323,11 @@ window.GradeCompass = {
     const byYear = [...rows].sort((a, b) => a.rs_per_kg_year - b.rs_per_kg_year)[0];
     const anyEdited = rows.some((r) => r.edited);
     let html = `<div class="econ-scroll"><table class="econ">
-      <thead><tr><th>Grade</th><th class="num-h">₹ / kg</th><th>Years to first intervention · est.</th><th class="num-h">₹ / kg-year</th></tr></thead>
+      <thead><tr><th>Grade</th><th class="num-h">₹ / kg</th><th><span class="long">Yrs to first intervention · est.</span><span class="short">Years · est.</span></th><th class="num-h">₹ / kg-year</th></tr></thead>
       <tbody>${rows.map((r) => `
         <tr${r.grade === byYear.grade ? ' class="best"' : ""}>
           <td class="grade-cell"><b>${esc(r.grade)}</b> <span class="fam">${FAMILY[E.GRADES[r.grade].family]}</span> ${r.grade === byYear.grade ? '<span class="best-tag">CHEAPEST PER YEAR</span>' : ""}</td>
-          <td class="num">₹ <input class="kg-in${r.edited ? " edited" : ""}" type="number" min="50" max="2000" step="1" value="${Math.round(r.rs_per_kg)}" data-grade="${esc(r.grade)}" aria-label="Price per kg for ${esc(r.grade)}, editable"></td>
+          <td class="num"><span class="rs">₹ </span><input class="kg-in${r.edited ? " edited" : ""}" type="number" min="50" max="2000" step="1" value="${Math.round(r.rs_per_kg)}" data-grade="${esc(r.grade)}" aria-label="Price in rupees per kg for ${esc(r.grade)}, editable"></td>
           <td>${esc(r.life_band)}</td>
           <td class="num"><b>₹${r.rs_per_kg_year.toFixed(1)}</b></td>
         </tr>`).join("")}
@@ -1270,18 +1338,23 @@ window.GradeCompass = {
       const saving = Math.round((1 - byYear.rs_per_kg_year / byKg.rs_per_kg_year) * 100);
       const breakEven = Math.round((byKg.rs_per_kg / byKg.years) * byYear.years);   // unrounded, so it matches the deck's ≈ ₹548/kg
       const stock = STOCKIST[byYear.grade];
-      let sens = "";
+      let sens = "", atLo = null;
       if (stock) {
-        const atLo = Math.round((1 - (stock[0] / byYear.years) / byKg.rs_per_kg_year) * 100);
+        atLo = Math.round((1 - (stock[0] / byYear.years) / byKg.rs_per_kg_year) * 100);
         sens = ` Domestic stockist quotes for ${esc(byYear.grade)} run ₹${stock[0]}–${stock[1]}/kg: at ₹${stock[0]} the advantage is ${atLo > 0 ? `~${atLo}%` : "gone"}; above ≈ ₹${fmt0(breakEven)}/kg it reverses.`;
       }
-      if (saving >= 10 && !result.marginal.includes(byYear.grade)) {
+      // headline only when the inversion is decisive at engine prices, survives the low stockist quote,
+      // and the cheaper-per-year grade is one the ranking itself puts in the top two
+      const byYearTop2 = result.ranking.slice(0, 2).some((r) => r.grade === byYear.grade);
+      if (saving >= 10 && !result.marginal.includes(byYear.grade) && (atLo === null || atLo >= 10) && byYearTop2) {
         html += `<div class="inversion"><span class="big">~${saving}% cheaper per year</span>
-          ${esc(byKg.grade)} reads cheap at ₹${fmt0(byKg.rs_per_kg)}/kg. Divided by years to first major intervention in this environment,
+          ${esc(byKg.grade)} reads cheap at ₹${fmt0(byKg.rs_per_kg)}/kg. Divided by years to first major intervention in this ${esc(catShort(result))} environment,
           <b>${esc(byYear.grade)}</b> — ₹${fmt0(byYear.rs_per_kg - byKg.rs_per_kg)}/kg more up front — costs ₹${byYear.rs_per_kg_year.toFixed(1)} against ₹${byKg.rs_per_kg_year.toFixed(1)} per kg-year.
           Stockists quote per kilogram; the second number is rarely on the table when a fabricator decides.
           <span class="tag">₹/kg ÷ est. years to first intervention · break-even for ${esc(byYear.grade)} ≈ ₹${fmt0(breakEven)}/kg${stock ? "" : " · indicative pricing"}</span></div>`;
         if (sens) html += `<p class="econ-note">${sens.trim()} Edit the ₹/kg cells to test your own quote.</p>`;
+      } else if (saving >= 10 && !byYearTop2) {
+        html += `<p class="econ-note"><b>Per service-year ${esc(byYear.grade)} is ${saving}% cheaper than ${esc(byKg.grade)}</b>, but the ranking puts it ${result.ranking.findIndex((r) => r.grade === byYear.grade) + 1}${["st", "nd", "rd"][result.ranking.findIndex((r) => r.grade === byYear.grade)] || "th"} on fabricability and cost weighting, so this is shown as a note, not a headline. Break-even ≈ ₹${fmt0(breakEven)}/kg.${sens}</p>`;
       } else {
         html += `<p class="econ-note">Per service-year the order barely changes: ${esc(byYear.grade)} is ${saving}% cheaper per kg-year than ${esc(byKg.grade)}${result.marginal.includes(byYear.grade) ? ", and carries a marginal caution" : ""} — not a decisive inversion. Break-even for ${esc(byYear.grade)} ≈ ₹${fmt0(breakEven)}/kg.${sens}</p>`;
       }
@@ -1290,9 +1363,25 @@ window.GradeCompass = {
     }
     if (byYear.grade !== rec) {
       const recRow = rows.find((r) => r.grade === rec);
-      html += `<div class="reconcile"><b>Why the banner still says ${esc(rec)}:</b> ${esc(byYear.grade)} is cheapest per service-year but ranks ${result.ranking.findIndex((r) => r.grade === byYear.grade) + 1}${["st", "nd", "rd"][result.ranking.findIndex((r) => r.grade === byYear.grade)] || "th"} at the <span class="mono">${COST_LABEL[result.input.cost_sensitivity]}</span> cost setting${result.marginal.includes(rec) ? `, and ${esc(rec)} carries a marginal caution` : ""}. ${recRow ? `${esc(rec)} costs ₹${recRow.rs_per_kg_year.toFixed(1)} per kg-year.` : ""} If life-cycle cost matters more than first cost, specify ${esc(byYear.grade)}.</div>`;
+      const pos = result.ranking.findIndex((r) => r.grade === byYear.grade);
+      const ord = `${pos + 1}${["st", "nd", "rd"][pos] || "th"}`;
+      const byYearMarg = result.marginal.includes(byYear.grade);
+      const notes = (parseLog(result).marginal[byYear.grade] || []).map((n) => n.split(" -- ")[0]);
+      const recG = E.GRADES[rec], byG = E.GRADES[byYear.grade];
+      let reason, advice;
+      if (byYearMarg) {
+        reason = `it carries a caution (${esc(notes.join("; "))}) and a cautioned grade scores 0.7 instead of 1.0 on requirement satisfaction`;
+        advice = `Resolve the caution first — ${/weld/i.test(notes.join()) ? "specify the L-grade or verify thin section / low heat input" : "confirm the corrosivity class on site"} — before choosing ${esc(byYear.grade)} on cost alone.`;
+      } else if (result.input.welded && recG.lGrade && !byG.lGrade) {
+        reason = `the product is welded and ${esc(rec)} (an L-grade, weldability ${recG.weld}/5) scores higher on fabricability`;
+        advice = `If the joint is thin section with low heat input, ${esc(byYear.grade)} is the better buy; otherwise the L-grade premium is sensitisation insurance.`;
+      } else {
+        reason = `at the <span class="mono">${COST_LABEL[result.input.cost_sensitivity]}</span> cost setting ${esc(rec)} scores higher on ${recG.form > byG.form ? "formability" : recG.ys > byG.ys ? "strength" : "the application profile"}${result.marginal.includes(rec) ? ` (even though ${esc(rec)} itself carries a caution)` : ""}`;
+        advice = `If life-cycle cost matters more than first cost, ${esc(byYear.grade)} is the better buy.`;
+      }
+      html += `<div class="reconcile"><b>Why the banner still says ${esc(rec)}:</b> ${esc(byYear.grade)} is cheapest per service-year but ranks ${ord} because ${reason}. ${recRow ? `${esc(rec)} costs ₹${recRow.rs_per_kg_year.toFixed(1)} per kg-year.` : ""} ${advice}</div>`;
     }
-    html += `<p class="econ-note">Lifetime bands are engineering-judgment estimates from PREN margin over the environment's upper corrosivity target — not a standards model (ISO 9224 covers only carbon steel, zinc, copper and aluminium) and maintenance regime is not an input. Production calibrates them against CSIR-CECRI stainless exposure data. Prices are indicative ex-mill assumptions unless you overwrite them.</p>`;
+    html += `<p class="econ-note">Bands are engineering judgment from PREN margin over this environment's upper target (${result.environment.pren_upper_target}): ≥ 10 → 25+ yrs, ≥ 5 → 20–25, ≥ 0 → 15–20, below → 8–15 with periodic maintenance; in C3 and milder every passing grade gets 25+. "First intervention" means re-polishing or partial replacement for pitting, not cosmetic tarnish. Not a standards model — see <a href="#limits-block">limitations</a>. Prices are indicative ex-mill assumptions unless you overwrite them.</p>`;
     el.innerHTML = html;
 
     el.querySelectorAll(".kg-in").forEach((inp) => {
@@ -1311,7 +1400,7 @@ window.GradeCompass = {
     const L = [];
     L.push("GRADECOMPASS DECISION RECORD (proof-of-concept engine)");
     L.push(`Generated: ${new Date().toISOString()}`);
-    L.push(`Scenario link: ${location.href}`);
+    L.push(`Scenario link: ${scenarioURL()}`);
     L.push("");
     L.push("INPUTS");
     L.push(`  Application: ${APP_LABELS[result.input.app]}`);
@@ -1347,9 +1436,7 @@ window.GradeCompass = {
     const el = $("explain");
     const rec = result.recommendation;
     if (!rec) {
-      el.innerHTML = `<div class="escalate"><b>Escalation path:</b> no grade in the preliminary catalogue meets all constraints.
-        The enquiry is handed to Jindal's technical team with the environment analysis and full elimination trail pre-filled —
-        the engine never substitutes a near-miss without saying so.</div>`;
+      el.innerHTML = `<div class="escalate"><b>No grade meets all constraints</b> — escalate with the trail above; the record below carries the full context.</div>`;
     } else {
       const alts = rec.alternatives.map((a) => {
         const dc = a.cost_delta >= 0 ? `+${a.cost_delta.toFixed(2)}` : a.cost_delta.toFixed(2);
@@ -1374,7 +1461,7 @@ window.GradeCompass = {
     setTimeout(() => { hintEl.textContent = ""; }, 3500);
   }
   $("btn-copy").addEventListener("click", () => copyText(recordText(current), $("btn-hint"), "Record copied."));
-  $("btn-link").addEventListener("click", () => copyText(location.href, $("btn-hint"), "Link copied."));
+  $("btn-link").addEventListener("click", () => copyText(scenarioURL(), $("btn-hint"), "Link copied."));
   $("btn-print").addEventListener("click", () => window.print());
 
   const dlg = $("esc-dialog");
@@ -1382,8 +1469,23 @@ window.GradeCompass = {
     const text = recordText(current);
     $("esc-text").value = text;
     const subject = `GradeCompass escalation: ${APP_LABELS[current.input.app]}${E.APPLICATIONS[current.input.app].override ? "" : ", " + current.input.location}`;
-    $("esc-mail").href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
+    // mail clients cap mailto: URLs near 2,000 characters, so the email carries the short form and the link;
+    // the full record (with the elimination trail) is in the text box for pasting
+    const rec = current.recommendation;
+    const short = [
+      `Application: ${APP_LABELS[current.input.app]}`,
+      `Location: ${E.APPLICATIONS[current.input.app].override ? "not used (service pathway)" : current.input.location}`,
+      `Welded: ${current.input.welded ? "yes" : "no"} · Cost sensitivity: ${current.input.cost_sensitivity}`,
+      `Environment: ${current.environment.display}`,
+      `Survivors: ${current.survivors.join(", ") || "none"}`,
+      rec ? `Recommendation: ${rec.grade}${rec.marginal ? " (with caution)" : ""}` : "Recommendation: none — escalate",
+      `Full record and elimination trail: ${scenarioURL()}`,
+      "(paste the full record from GradeCompass below)",
+    ].join("\n");
+    $("esc-mail").href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(short)}`;
     if (typeof dlg.showModal === "function") dlg.showModal(); else dlg.setAttribute("open", "");
+    const ta = $("esc-text"); try { ta.setSelectionRange(0, 0); } catch {} ta.scrollTop = 0;
+    $("esc-mail").focus();
   }
   document.addEventListener("click", (ev) => { if (ev.target.closest("[data-escalate]")) openEscalation(); });
   $("esc-close").addEventListener("click", () => dlg.close());
@@ -1395,18 +1497,28 @@ window.GradeCompass = {
     const app = p.get("app"), d = p.get("d"), cost = p.get("cost"), weld = p.get("weld");
     if (!app || !E.APPLICATIONS[app]) return false;
     appSel.value = app; onAppChange();
+    const preset = PRESETS.find((q) => q.app === app);
     if (d && E.DISTRICTS[d]) distSel.value = d;
+    else if (preset) distSel.value = preset.district;   // unknown district in the link: fall back to the scenario's district
     if (cost && COSTS.includes(cost)) costRange.value = String(COSTS.indexOf(cost));
     if (weld !== null) weldBox.checked = weld === "1";
+    const kg = p.get("kg");
+    if (kg) for (const pair of kg.split(",")) { const [gname, v] = pair.split(":"); if (E.GRADES[gname] && Number(v) > 0) priceOverride[gname] = Number(v); }
     return true;
   }
+  function scenarioHash() {
+    const p = new URLSearchParams();
+    p.set("app", appSel.value); p.set("d", distSel.value); p.set("cost", COSTS[Number(costRange.value)]); p.set("weld", weldBox.checked ? "1" : "0");
+    const kg = Object.entries(priceOverride).map(([gname, v]) => `${gname}:${Math.round(v)}`).join(",");
+    if (kg) p.set("kg", kg);
+    return "#" + p.toString();
+  }
+  function scenarioURL() { return location.href.split("#")[0] + scenarioHash(); }
   let hashTimer;
   function writeHash() {
     clearTimeout(hashTimer);
     hashTimer = setTimeout(() => {
-      const p = new URLSearchParams();
-      p.set("app", appSel.value); p.set("d", distSel.value); p.set("cost", COSTS[Number(costRange.value)]); p.set("weld", weldBox.checked ? "1" : "0");
-      try { history.replaceState(null, "", "#" + p.toString()); } catch { location.hash = p.toString(); }
+      try { history.replaceState(null, "", scenarioHash()); } catch { location.hash = scenarioHash().slice(1); }
     }, 200);
   }
 
@@ -1417,10 +1529,15 @@ window.GradeCompass = {
       && weldBox.checked === Boolean(E.APPLICATIONS[p.app].welded));
   }
 
+  let scenarioKey = null;
   function update(presetIdx) {
     const cost = COSTS[Number(costRange.value)];
     $("cost-value").textContent = COST_LABEL[cost];
-    costRange.setAttribute("aria-valuetext", cost);
+    costRange.setAttribute("aria-valuetext", COST_LABEL[cost].toLowerCase());
+    // typed what-if prices belong to one scenario: drop them when the application or district changes
+    const key = appSel.value + "|" + (E.APPLICATIONS[appSel.value].override ? "-" : distSel.value);
+    if (scenarioKey !== null && key !== scenarioKey) for (const k of Object.keys(priceOverride)) delete priceOverride[k];
+    scenarioKey = key;
     const result = E.recommend(appSel.value, distSel.value, cost, weldBox.checked);
     current = result;
     $("engine-ms").textContent = result.engine_ms < 1 ? "< 1 ms" : result.engine_ms.toFixed(1) + " ms";

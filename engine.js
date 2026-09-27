@@ -6,7 +6,7 @@
 const GRADES = {
   "409":  { family: "ferritic",         pren: 10.5, ys: 170, cost: 0.90, form: 3, weld: 3, maxTemp: 675,  mo: 0.0, lGrade: false, stabilized: true,  tags: ["exhaust"] },
   "430":  { family: "ferritic",         pren: 16.5, ys: 205, cost: 1.00, form: 3, weld: 2, maxTemp: 815,  mo: 0.0, lGrade: false, stabilized: false, tags: ["interior", "appliance", "kitchen_panel"] },
-  "439":  { family: "ferritic",         pren: 17.5, ys: 205, cost: 1.05, form: 3, weld: 3, maxTemp: 845,  mo: 0.0, lGrade: false, stabilized: true,  tags: ["exhaust"] },
+  "439":  { family: "ferritic",         pren: 17.5, ys: 205, cost: 1.05, form: 3, weld: 3, maxTemp: 815,  mo: 0.0, lGrade: false, stabilized: true,  tags: ["exhaust"] },
   "202":  { family: "austenitic200",    pren: 18.0, ys: 260, cost: 1.10, form: 4, weld: 3, maxTemp: 815,  mo: 0.0, lGrade: false, stabilized: false, tags: ["utensil_bis", "furniture", "interior"] },
   "304":  { family: "austenitic300",    pren: 19.0, ys: 205, cost: 1.30, form: 5, weld: 4, maxTemp: 870,  mo: 0.0, lGrade: false, stabilized: false, tags: ["utensil_bis", "railing", "interior", "railway_rdso", "food_processing", "facade"] },
   "304L": { family: "austenitic300",    pren: 19.0, ys: 170, cost: 1.35, form: 5, weld: 5, maxTemp: 870,  mo: 0.0, lGrade: true,  stabilized: false, tags: ["food_processing", "water_treatment", "railing", "railway_rdso"] },
@@ -68,7 +68,7 @@ const APPLICATIONS = {
                                   display: "food-contact service (washed, indoor) -- atmospheric pathway not applicable" } },
   pem_electrolyzer: { tag: "electrolyzer",    profile: [0.7, 0.1, 0.2], chemical: true, welded: true, temp: 80,
                       override: { floor: [24, 30], label: "chemical service (alloy-content floor: PREN 24, target 30)",
-                                  display: "chemical (PEM balance-of-plant: high-purity water + O2, 80C, H2 side) -- atmospheric pathway overridden" },
+                                  display: "chemical (PEM balance-of-plant: high-purity water + O2, 60-80C, H2 side) -- atmospheric pathway overridden" },
                       exclude: { duplex: "hydrogen-assisted fracture risk in the ferrite phase (Sandia H2 Technical Reference); not offered for H2-wetted service" } },
   auto_exhaust:     { tag: "exhaust",         profile: [0.6, 0.3, 0.1], temp: 650, internal: true },  // cold end (muffler / tailpipe)
   cooling_tower:    { tag: "water_treatment", profile: [0.6, 0.2, 0.2], mic: true, welded: true },
@@ -134,7 +134,7 @@ function eliminate(appKey, category, welded, serviceTemp) {
         if (hard >= 18) weldCaution = true;
       }
     if (app.mic && g.mo < 2.0) {
-      log.push(`  x ${name} eliminated: MIC risk in stagnant water: Mo-free grade (Mo ${g.mo.toFixed(1)}% < 2%) not offered; Mo-bearing grades resist MIC better, but biocide dosing and stagnation control remain mandatory for any grade`);
+      log.push(`  x ${name} eliminated: MIC screen (prototype house rule, not a standard threshold): Mo ${g.mo.toFixed(1)}% < 2%, so not offered for basin service here; treated 304L basins exist in practice, and biocide dosing and stagnation control remain mandatory for any grade`);
       continue;
     }
     survivors.push(name);

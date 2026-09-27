@@ -61,6 +61,24 @@ def main():
     none = [(r["input"]["app"], r["input"]["location"]) for r in py if r["recommendation"] is None]
     apps_without_grade = sorted({a for a, _ in none})
     print(f"no-recommendation cases: {len(none)} (applications: {apps_without_grade})")
+
+    # Behavioural regression guards -- one per flaw the 26 Sep audit corrected.
+    # They run on the Python reference; parity above carries them to both JS copies.
+    def guard(label, cond):
+        nonlocal ok
+        print(f"guard   : {label:58} [{'OK' if cond else 'FAIL'}]")
+        ok = ok and cond
+    pem = [r for r in py if r["input"]["app"] == "pem_electrolyzer"]
+    guard("PEM never returns duplex (hydrogen-embrittlement veto)",
+          all(r["recommendation"]["grade"] != "2205" and "2205" not in r["survivors"] for r in pem))
+    kit = [r for r in py if r["input"]["app"] == "kitchen_utensils"]
+    guard("utensils always return a grade (food-contact pathway)",
+          bool(kit) and all(r["recommendation"] is not None for r in kit))
+    goa_w = [r for r in py if r["input"]["app"] == "outdoor_railing"
+             and r["input"]["location"] == "Panaji, Goa" and r["input"]["welded"] is True]
+    guard("welded coastal railing offers 316L and drops 316",
+          bool(goa_w) and all("316L" in r["survivors"] and "316" not in r["survivors"] for r in goa_w))
+    guard("only the deliberate furnace case escalates", apps_without_grade == ["furnace_liner"])
     print("PARITY PASSED" if ok else "PARITY FAILED")
     sys.exit(0 if ok else 1)
 

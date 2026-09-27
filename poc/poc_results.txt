@@ -22,7 +22,7 @@ GradeCompass PoC -- engine run 2026-09-27
     Why: PREN 35.0 vs environment C4-C5; cost index 1.8x (430=1.0); yield 450 MPa; formability 2/5.
     Alternative 316 (score 0.689): -0.20x cost, -10.5 PREN vs 2205.
     Alternative 316L (score 0.6761): -0.15x cost, -11.0 PREN vs 2205.
-  [engine time: 0.11 ms]
+  [engine time: 0.10 ms]
 
 === Scenario A2: Same railing, cost sensitivity HIGH (slider moved) ===
   Input: app=outdoor_railing, location=Panaji, Goa, welded=False, cost_sensitivity=high
@@ -44,7 +44,7 @@ GradeCompass PoC -- engine run 2026-09-27
     CAUTION: marginal for the upper bound of the corrosivity range -- recommendation carries an explicit warning + escalation option.
     Alternative 316L (score 0.6608): +0.05x cost, -0.5 PREN vs 316.
     Alternative 2205 (score 0.6549): +0.20x cost, +10.5 PREN vs 316.
-  [engine time: 0.07 ms]
+  [engine time: 0.05 ms]
 
 === Scenario B: Kitchen utensils, Rajkot (cost: HIGH) ===
   Input: app=kitchen_utensils, location=Rajkot, welded=False, cost_sensitivity=high
@@ -61,7 +61,7 @@ GradeCompass PoC -- engine run 2026-09-27
 
 === Scenario C: PEM electrolyser balance-of-plant piping (chemical service, welded) ===
   Input: app=pem_electrolyzer, location=n/a (service pathway override), welded=True, cost_sensitivity=medium
-  Layer 1 -> corrosivity: chemical (PEM balance-of-plant: high-purity water + O2, 80C, H2 side) -- atmospheric pathway overridden
+  Layer 1 -> corrosivity: chemical (PEM balance-of-plant: high-purity water + O2, 60-80C, H2 side) -- atmospheric pathway overridden
   Layer 2 elimination log:
   ! 316L passes but MARGINAL: PREN 24.0 < upper target 30
   x 2205 eliminated: hydrogen-assisted fracture risk in the ferrite phase (Sandia H2 Technical Reference); not offered for H2-wetted service
@@ -122,7 +122,7 @@ GradeCompass PoC -- engine run 2026-09-27
     Why: PREN 19.0 vs environment C1-C2; cost index 1.3x (430=1.0); yield 205 MPa; formability 5/5.
     Alternative 304L (score 0.7963): +0.05x cost, +0.0 PREN vs 304.
     Alternative 316 (score 0.7163): +0.30x cost, +5.5 PREN vs 304.
-  [engine time: 0.03 ms]
+  [engine time: 0.04 ms]
 
 --- PART 2: EDGE CASE -- NO MATCHING GRADE (objective F6) ---
 
