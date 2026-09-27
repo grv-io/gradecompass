@@ -395,11 +395,7 @@
 <header class="masthead">
   <div class="mast-top">
     <h1 class="wordmark">GradeCompass</h1>
-    <div class="mast-sub">Enter where the steel will be used. Get the right stainless grade, the reason for it and its real cost per year of service.</div>
-    <div class="mast-meta">
-      <span class="built">Stainless Spark 2026 · Jindal Stainless · Problem Statement 2</span>
-      <span class="tag">Deterministic engine · 12 grades · 12 districts · 7 applications · <span id="engine-ms">—</span></span>
-    </div>
+    <span id="engine-ms" hidden></span>
   </div>
   <div class="bar"></div><div class="bar"></div>
 </header>
@@ -488,19 +484,16 @@
     </section>
 
     <section class="block" aria-labelledby="why-h">
-      <div class="block-head"><h2 class="eyebrow" id="why-h"><span class="ly">5 ·</span> Decision record</h2></div>
+      <div class="block-head"><h2 class="eyebrow" id="why-h"><span class="ly">5 ·</span> Save or share</h2></div>
       <div class="block-body">
-        <div class="explain" id="explain"></div>
-        <div class="btn-row">
+        <div class="explain" id="explain" style="display:none"></div>
+        <div class="btn-row" style="margin-top:0">
           <button type="button" class="btn" id="btn-copy">Copy record</button>
           <button type="button" class="btn" id="btn-print">Print / save PDF</button>
           <button type="button" class="btn" id="btn-link">Copy link to this scenario</button>
           <span class="hint" id="btn-hint"></span>
         </div>
-        <details class="payload">
-          <summary>Engine output (JSON)</summary>
-          <pre id="payload"></pre>
-        </details>
+        <pre id="payload" hidden></pre>
       </div>
     </section>
   </div>
@@ -535,7 +528,6 @@
 <footer>
   <p><b>PREN</b> = %Cr + 3.3&#8202;×&#8202;%Mo + 16&#8202;×&#8202;%N, a comparative pitting-resistance index. Prices are indicative; service years are estimates. For critical applications, confirm with Jindal's technical advisory team.</p>
   <p class="standards">Sources · <a href="https://www.iso.org/standard/53499.html" rel="noopener">ISO 9223</a> · <a href="https://steel-sci.com/assets/uk-tech1801.pdf" rel="noopener">EN 1993-1-4 Annex A</a> · <a href="https://store.astm.org/a0240_a0240m-22b.html" rel="noopener">ASTM A240</a> · <a href="https://www.imoa.info/download_files/stainless-steel/issf/educational/Module_05_Corrosion_Resistance_of_Stainless_Steels_en.pdf" rel="noopener">IMOA / ISSF</a> · BIS IS 5522 / IS 15997 / IS 14756 · <a href="https://nickelinstitute.org/media/1726/microbiologicallyinfluencedcorrosionofstainlesssteelsbywaterusedforcoolingandhydrostatictesting_10085_.pdf" rel="noopener">Nickel Institute 10085</a> · <a href="https://www.sandia.gov/app/uploads/sites/158/2021/12/1600TechRef_DuplexSS.pdf" rel="noopener">Sandia H₂ reference</a> · <a href="https://krc.cecri.res.in/ro_2005/013-2005.pdf" rel="noopener">CSIR-CECRI corrosivity maps</a> · IMD · ERA5 · CPCB</p>
-  <p class="code">Code and test: <a href="https://github.com/grv-io/gradecompass" rel="noopener">github.com/grv-io/gradecompass</a></p>
 </footer>
 
 <dialog class="esc" id="esc-dialog" aria-labelledby="esc-title">
@@ -1137,7 +1129,7 @@ window.GradeCompass = {
       </div>`;
     }).join("");
     $("elim-foot").textContent = app.mic
-      ? "MIC caution applies to every survivor: Mo-bearing grades resist microbial attack better, but biocide dosing, drain-down and stagnation control are mandatory for any grade in a basin."
+      ? "Microbial risk: biocide dosing and drain-down are needed for any grade in a basin."
       : "";
   }
 
@@ -1320,8 +1312,7 @@ window.GradeCompass = {
       </div>`;
     }).join("");
     const w = E.COST_WEIGHT[result.input.cost_sensitivity];
-    const cautionedFirst = result.marginal.includes(result.ranking[0].grade) && result.survivors.some((s) => !result.marginal.includes(s));
-    $("rank-foot").textContent = `Score: cost ${Math.round(w * 100)}%, the rest requirement fit, fabricability and strength. Unsafe grades never enter the ranking.${cautionedFirst ? " A grade with a caution can rank first; only hard safety limits cannot be outweighed." : ""}`;
+    $("rank-foot").textContent = `Score = cost ${Math.round(w * 100)}% + fit, fabrication and strength. Unsafe grades are never ranked.`;
   }
 
   function renderEconomics(result) {
@@ -1360,7 +1351,7 @@ window.GradeCompass = {
           <td class="num"><b>₹${r.rs_per_kg_year.toFixed(1)}</b></td>
         </tr>`).join("")}
       </tbody></table></div>`;
-    if (anyEdited) html += `<p class="econ-note"><b>Your prices are in use</b> for this table and the headline below (engine prices shown in the payload). <button type="button" class="btn" id="kg-reset" style="margin-left:6px">Reset prices</button></p>`;
+    if (anyEdited) html += `<p class="econ-note"><b>Your prices are in use</b>. <button type="button" class="btn" id="kg-reset" style="margin-left:6px">Reset prices</button></p>`;
 
     if (byKg.grade !== byYear.grade) {
       const saving = Math.round((1 - byYear.rs_per_kg_year / byKg.rs_per_kg_year) * 100);
@@ -1408,7 +1399,6 @@ window.GradeCompass = {
       }
       html += `<div class="reconcile"><b>Why the banner still says ${esc(rec)}:</b> ${esc(byYear.grade)} is cheapest per service-year but ranks ${ord} because ${reason}. ${recRow ? `${esc(rec)} costs ₹${recRow.rs_per_kg_year.toFixed(1)} per kg-year.` : ""} ${advice}</div>`;
     }
-    html += `<p class="econ-note">Service years are engineering estimates from PREN margin; prices are indicative ex-mill unless edited. See <a href="#limits-block">prototype scope</a>.</p>`;
     el.innerHTML = html;
 
     el.querySelectorAll(".kg-in").forEach((inp) => {
