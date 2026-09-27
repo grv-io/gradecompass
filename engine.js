@@ -4,16 +4,16 @@
    Parity-tested against the Python reference across the full scenario grid. */
 
 const GRADES = {
-  "409":  { family: "ferritic",         pren: 10.5, ys: 170, cost: 0.90, form: 3, weld: 3, maxTemp: 815,  mo: 0.0, lGrade: false, stabilized: true,  tags: ["exhaust"] },
+  "409":  { family: "ferritic",         pren: 10.5, ys: 170, cost: 0.90, form: 3, weld: 3, maxTemp: 675,  mo: 0.0, lGrade: false, stabilized: true,  tags: ["exhaust"] },
   "430":  { family: "ferritic",         pren: 16.5, ys: 205, cost: 1.00, form: 3, weld: 2, maxTemp: 815,  mo: 0.0, lGrade: false, stabilized: false, tags: ["interior", "appliance", "kitchen_panel"] },
   "439":  { family: "ferritic",         pren: 17.5, ys: 205, cost: 1.05, form: 3, weld: 3, maxTemp: 845,  mo: 0.0, lGrade: false, stabilized: true,  tags: ["exhaust"] },
   "202":  { family: "austenitic200",    pren: 18.0, ys: 260, cost: 1.10, form: 4, weld: 3, maxTemp: 815,  mo: 0.0, lGrade: false, stabilized: false, tags: ["utensil_bis", "furniture", "interior"] },
   "304":  { family: "austenitic300",    pren: 19.0, ys: 205, cost: 1.30, form: 5, weld: 4, maxTemp: 870,  mo: 0.0, lGrade: false, stabilized: false, tags: ["utensil_bis", "railing", "interior", "railway_rdso", "food_processing", "facade"] },
-  "304L": { family: "austenitic300",    pren: 19.0, ys: 170, cost: 1.35, form: 5, weld: 5, maxTemp: 870,  mo: 0.0, lGrade: true,  stabilized: false, tags: ["food_processing", "water_treatment"] },
+  "304L": { family: "austenitic300",    pren: 19.0, ys: 170, cost: 1.35, form: 5, weld: 5, maxTemp: 870,  mo: 0.0, lGrade: true,  stabilized: false, tags: ["food_processing", "water_treatment", "railing", "railway_rdso"] },
   "316":  { family: "austenitic300",    pren: 24.5, ys: 205, cost: 1.60, form: 4, weld: 4, maxTemp: 870,  mo: 2.1, lGrade: false, stabilized: false, tags: ["railing", "facade", "food_processing", "marine", "railway_rdso"] },
   "316L": { family: "austenitic300",    pren: 24.0, ys: 170, cost: 1.65, form: 4, weld: 5, maxTemp: 870,  mo: 2.1, lGrade: true,  stabilized: false, tags: ["railing", "facade", "water_treatment", "food_processing", "pharma", "marine", "electrolyzer"] },
-  "321":  { family: "austenitic300",    pren: 18.5, ys: 205, cost: 1.50, form: 4, weld: 5, maxTemp: 870,  mo: 0.0, lGrade: false, stabilized: true,  tags: ["high_temp"] },
-  "310":  { family: "austenitic300",    pren: 25.0, ys: 205, cost: 2.00, form: 3, weld: 4, maxTemp: 1035, mo: 0.0, lGrade: false, stabilized: false, tags: ["furnace", "high_temp"] },
+  "321":  { family: "austenitic300",    pren: 18.5, ys: 205, cost: 2.10, form: 4, weld: 5, maxTemp: 870,  mo: 0.0, lGrade: false, stabilized: true,  tags: ["high_temp"] },
+  "310":  { family: "austenitic300",    pren: 25.0, ys: 205, cost: 2.50, form: 3, weld: 4, maxTemp: 1035, mo: 0.0, lGrade: false, stabilized: false, tags: ["furnace", "high_temp"] },
   "2205": { family: "duplex",           pren: 35.0, ys: 450, cost: 1.80, form: 2, weld: 3, maxTemp: 300,  mo: 3.1, lGrade: true,  stabilized: false, tags: ["railing", "facade", "marine", "water_treatment", "electrolyzer", "chemical"] },
   "904L": { family: "super_austenitic", pren: 35.5, ys: 220, cost: 3.00, form: 3, weld: 4, maxTemp: 400,  mo: 4.3, lGrade: true,  stabilized: false, tags: ["electrolyzer", "chemical", "marine", "water_treatment"] },
 };
@@ -33,24 +33,24 @@ const DISTRICTS = {
   "Panaji, Goa":           { coast: 2.0,  rh: 78, rain: 2900, so2: "low",
     documented: "Coastal monsoon belt; 304 pits in 2-3 yrs (field observation); 316/duplex specified for exteriors" },
   "Chennai":               { coast: 3.0,  rh: 70, rain: 1400, so2: "med",
-    documented: "Aggressive coastal-urban; duplex used for critical coastal infrastructure" },
+    documented: "Aggressive coastal-urban; 316 minimum for seafront exteriors, duplex specified in Chennai-area desalination and coastal plant (industry practice, team note)" },
   "Visakhapatnam":         { coast: 2.0,  rh: 70, rain: 1100, so2: "high",
-    documented: "Among India's most corrosive atmospheres (coastal + industrial SO2; CECRI exposure studies)" },
+    documented: "Coastal-industrial (steel plant, port, refinery): chloride plus SO2 -- treated as one of India's more aggressive urban atmospheres (team note)" },
   "Surat":                 { coast: 15.0, rh: 65, rain: 1200, so2: "med",
     documented: "304 adequate but early exterior tarnishing after 5-7 yrs; 316 for premium installs" },
-  "Jamshedpur":            { coast: 250,  rh: 65, rain: 1400, so2: "high",
+  "Jamshedpur":            { coast: 175,  rh: 65, rain: 1400, so2: "high",
     documented: "Industrial atmospheric corrosion; 304 adequate for most uses; 316L for chemical exposure" },
-  "Delhi":                 { coast: 1000, rh: 52, rain: 790,  so2: "med",
+  "Delhi":                 { coast: 830, rh: 52, rain: 790,  so2: "med",
     documented: "Urban inland; 304 standard for architecture and transit interior fittings" },
   "Pune":                  { coast: 100,  rh: 58, rain: 722,  so2: "med",
     documented: "Inland industrial; standard grades perform well" },
-  "Rajkot":                { coast: 100,  rh: 50, rain: 590,  so2: "low",
+  "Rajkot":                { coast: 65,   rh: 50, rain: 650,  so2: "low",
     documented: "Dry inland; 202-type/304 standard for utensil industry" },
-  "Nashik":                { coast: 150,  rh: 52, rain: 690,  so2: "low",
+  "Nashik":                { coast: 115,  rh: 52, rain: 690,  so2: "low",
     documented: "Semi-arid inland; 304 and 430 perform well outdoors" },
-  "Hisar":                 { coast: 1100, rh: 50, rain: 450,  so2: "low",
+  "Hisar":                 { coast: 870, rh: 50, rain: 450,  so2: "low",
     documented: "Continental dry (Jindal registered office and Hisar plant); minimal atmospheric corrosion" },
-  "Jaipur":                { coast: 900,  rh: 43, rain: 600,  so2: "low",
+  "Jaipur":                { coast: 650,  rh: 43, rain: 600,  so2: "low",
     documented: "Semi-arid; even 202-type/430 perform well outdoors" },
 };
 
@@ -70,7 +70,7 @@ const APPLICATIONS = {
                       override: { floor: [24, 30], label: "chemical service (alloy-content floor: PREN 24, target 30)",
                                   display: "chemical (PEM balance-of-plant: high-purity water + O2, 80C, H2 side) -- atmospheric pathway overridden" },
                       exclude: { duplex: "hydrogen-assisted fracture risk in the ferrite phase (Sandia H2 Technical Reference); not offered for H2-wetted service" } },
-  auto_exhaust:     { tag: "exhaust",         profile: [0.6, 0.3, 0.1], temp: 750, internal: true },
+  auto_exhaust:     { tag: "exhaust",         profile: [0.6, 0.3, 0.1], temp: 650, internal: true },  // cold end (muffler / tailpipe)
   cooling_tower:    { tag: "water_treatment", profile: [0.6, 0.2, 0.2], mic: true, welded: true },
   metro_interior:   { tag: "railway_rdso",    profile: [0.3, 0.4, 0.3], indoor: true },
   furnace_liner:    { tag: "furnace",         profile: [0.6, 0.1, 0.3], temp: 1200 },
@@ -134,7 +134,7 @@ function eliminate(appKey, category, welded, serviceTemp) {
         if (hard >= 18) weldCaution = true;
       }
     if (app.mic && g.mo < 2.0) {
-      log.push(`  x ${name} eliminated: MIC risk (Mo ${g.mo.toFixed(1)}% < 2%) in stagnant water; Mo-bearing grade required, stagnation control still mandatory`);
+      log.push(`  x ${name} eliminated: MIC risk in stagnant water: Mo-free grade (Mo ${g.mo.toFixed(1)}% < 2%) not offered; Mo-bearing grades resist MIC better, but biocide dosing and stagnation control remain mandatory for any grade`);
       continue;
     }
     survivors.push(name);
@@ -171,6 +171,7 @@ function rank(survivors, marginal, appKey, costSensitivity, welded = false) {
 }
 
 function serviceLifeBand(name, upper) {
+  if (upper <= 18) return ["25+ yrs", 27.5];   // C3 and milder: passing grades are not pitting-life-limited
   const margin = GRADES[name].pren - upper;
   if (margin >= 10) return ["25+ yrs", 27.5];
   if (margin >= 5) return ["20-25 yrs", 22.5];
@@ -180,7 +181,7 @@ function serviceLifeBand(name, upper) {
 
 function costPerServiceYear(name, upper) {
   const [band, years] = serviceLifeBand(name, upper);
-  const rsPerKg = GRADES[name].cost * BASE_COST_RS_PER_KG;
+  const rsPerKg = round(GRADES[name].cost * BASE_COST_RS_PER_KG, 2);
   return { band, rsPerKg, rsPerYear: round(rsPerKg / years, 1) };
 }
 
@@ -220,7 +221,10 @@ function recommend(appKey, district = null, costSensitivity = "medium",
                    welded = null, serviceTemp = null) {
   const t0 = (typeof performance !== "undefined" ? performance : Date).now();
   const app = APPLICATIONS[appKey];
-  if (welded === null) welded = Boolean(app.welded);
+  if (!app) throw new Error(`unknown application '${appKey}'`);
+  if (!app.override && !DISTRICTS[district]) throw new Error(`unknown district '${district}'`);
+  if (!(costSensitivity in COST_WEIGHT)) throw new Error(`unknown cost sensitivity '${costSensitivity}'`);
+  welded = (welded === null || welded === undefined) ? Boolean(app.welded) : welded === true;
   if (serviceTemp === null) serviceTemp = app.temp ?? null;
 
   let raw, catForFilter, catDisplay;
@@ -239,7 +243,7 @@ function recommend(appKey, district = null, costSensitivity = "medium",
   const front = paretoFrontier([...survivors]);
 
   let economics = null;
-  if (ranking.length && !app.internal) {
+  if (ranking.length && !app.internal && !app.override) {   // null for internal (exhaust) and override (chemical / food-contact)
     economics = ranking.map(({ name }) => {
       const { band, rsPerKg, rsPerYear } = costPerServiceYear(name, upper);
       return { grade: name, life_band: band, rs_per_kg: rsPerKg, rs_per_kg_year: rsPerYear };

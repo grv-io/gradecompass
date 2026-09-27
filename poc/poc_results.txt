@@ -1,0 +1,203 @@
+GradeCompass PoC -- engine run 2026-09-27
+======================================================================
+
+--- PART 1: SIX APPLICATION SCENARIOS (validation_and_feasibility.md #2) ---
+
+=== Scenario A1: Coastal railing, Panaji, Goa (cost: MEDIUM) ===
+  Input: app=outdoor_railing, location=Panaji, Goa, welded=False, cost_sensitivity=medium
+  Layer 1 -> corrosivity: C4-C5
+  Layer 2 elimination log:
+  x 304 eliminated: PREN 19.0 < floor 24 for C4-C5
+  x 304L eliminated: PREN 19.0 < floor 24 for C4-C5
+  ! 316 passes but MARGINAL: PREN 24.5 < upper target 30
+  ! 316L passes but MARGINAL: PREN 24.0 < upper target 30
+  Survivors: ['316', '316L', '2205']
+  Pareto frontier (cost vs PREN): ['316', '2205']
+  Layer 3 ranking: [('2205', 0.7265), ('316', 0.689), ('316L', 0.6761)]
+  Service-life economics (Rs/kg -> Rs per year to first major intervention, the inversion):
+    2205  Rs 315/kg | first intervention 20-25 yrs                        | ~Rs 14.0/kg-year
+    316   Rs 280/kg | first intervention 8-15 yrs (periodic maintenance)  | ~Rs 24.3/kg-year
+    316L  Rs 289/kg | first intervention 8-15 yrs (periodic maintenance)  | ~Rs 25.1/kg-year
+  TOP RECOMMENDATION: 2205  (score 0.7265)
+    Why: PREN 35.0 vs environment C4-C5; cost index 1.8x (430=1.0); yield 450 MPa; formability 2/5.
+    Alternative 316 (score 0.689): -0.20x cost, -10.5 PREN vs 2205.
+    Alternative 316L (score 0.6761): -0.15x cost, -11.0 PREN vs 2205.
+  [engine time: 0.11 ms]
+
+=== Scenario A2: Same railing, cost sensitivity HIGH (slider moved) ===
+  Input: app=outdoor_railing, location=Panaji, Goa, welded=False, cost_sensitivity=high
+  Layer 1 -> corrosivity: C4-C5
+  Layer 2 elimination log:
+  x 304 eliminated: PREN 19.0 < floor 24 for C4-C5
+  x 304L eliminated: PREN 19.0 < floor 24 for C4-C5
+  ! 316 passes but MARGINAL: PREN 24.5 < upper target 30
+  ! 316L passes but MARGINAL: PREN 24.0 < upper target 30
+  Survivors: ['316', '316L', '2205']
+  Pareto frontier (cost vs PREN): ['316', '2205']
+  Layer 3 ranking: [('316', 0.6787), ('316L', 0.6608), ('2205', 0.6549)]
+  Service-life economics (Rs/kg -> Rs per year to first major intervention, the inversion):
+    316   Rs 280/kg | first intervention 8-15 yrs (periodic maintenance)  | ~Rs 24.3/kg-year
+    316L  Rs 289/kg | first intervention 8-15 yrs (periodic maintenance)  | ~Rs 25.1/kg-year
+    2205  Rs 315/kg | first intervention 20-25 yrs                        | ~Rs 14.0/kg-year
+  TOP RECOMMENDATION: 316  (score 0.6787)
+    Why: PREN 24.5 vs environment C4-C5; cost index 1.6x (430=1.0); yield 205 MPa; formability 4/5.
+    CAUTION: marginal for the upper bound of the corrosivity range -- recommendation carries an explicit warning + escalation option.
+    Alternative 316L (score 0.6608): +0.05x cost, -0.5 PREN vs 316.
+    Alternative 2205 (score 0.6549): +0.20x cost, +10.5 PREN vs 316.
+  [engine time: 0.07 ms]
+
+=== Scenario B: Kitchen utensils, Rajkot (cost: HIGH) ===
+  Input: app=kitchen_utensils, location=Rajkot, welded=False, cost_sensitivity=high
+  Layer 1 -> corrosivity: food-contact service (washed, indoor) -- atmospheric pathway not applicable
+  Layer 2 elimination log:
+    (no eliminations)
+  Survivors: ['202', '304']
+  Pareto frontier (cost vs PREN): ['202', '304']
+  Layer 3 ranking: [('202', 0.8863), ('304', 0.8555)]
+  TOP RECOMMENDATION: 202  (score 0.8863)
+    Why: PREN 18.0 vs environment food-contact service (PREN floor 16, target 18); cost index 1.1x (430=1.0); yield 260 MPa; formability 4/5.
+    Alternative 304 (score 0.8555): +0.20x cost, +1.0 PREN vs 202.
+  [engine time: 0.03 ms]
+
+=== Scenario C: PEM electrolyser balance-of-plant piping (chemical service, welded) ===
+  Input: app=pem_electrolyzer, location=n/a (service pathway override), welded=True, cost_sensitivity=medium
+  Layer 1 -> corrosivity: chemical (PEM balance-of-plant: high-purity water + O2, 80C, H2 side) -- atmospheric pathway overridden
+  Layer 2 elimination log:
+  ! 316L passes but MARGINAL: PREN 24.0 < upper target 30
+  x 2205 eliminated: hydrogen-assisted fracture risk in the ferrite phase (Sandia H2 Technical Reference); not offered for H2-wetted service
+  Survivors: ['316L', '904L']
+  Pareto frontier (cost vs PREN): ['316L', '904L']
+  Layer 3 ranking: [('316L', 0.6462), ('904L', 0.5577)]
+  TOP RECOMMENDATION: 316L  (score 0.6462)
+    Why: PREN 24.0 vs environment chemical service (alloy-content floor: PREN 24, target 30); cost index 1.65x (430=1.0); yield 170 MPa; formability 4/5.
+    CAUTION: marginal for the upper bound of the corrosivity range -- recommendation carries an explicit warning + escalation option.
+    Alternative 904L (score 0.5577): +1.35x cost, +11.5 PREN vs 316L.
+  [engine time: 0.03 ms]
+
+=== Scenario D: Automotive exhaust, Pune (cost: HIGH) ===
+  Input: app=auto_exhaust, location=Pune, welded=False, cost_sensitivity=high
+  Layer 1 -> corrosivity: C2-C3
+  Layer 2 elimination log:
+    (no eliminations)
+  Survivors: ['409', '439']
+  Pareto frontier (cost vs PREN): ['409', '439']
+  Layer 3 ranking: [('409', 0.9349), ('439', 0.8909)]
+  TOP RECOMMENDATION: 409  (score 0.9349)
+    Why: PREN 10.5 vs environment C2-C3; cost index 0.9x (430=1.0); yield 170 MPa; formability 3/5.
+    Alternative 439 (score 0.8909): +0.15x cost, +7.0 PREN vs 409.
+  [engine time: 0.02 ms]
+
+=== Scenario E: Cooling tower basin, Chennai (cost: HIGH) ===
+  Input: app=cooling_tower, location=Chennai, welded=True, cost_sensitivity=high
+  Layer 1 -> corrosivity: C4-C5
+  Layer 2 elimination log:
+  x 304L eliminated: PREN 19.0 < floor 24 for C4-C5
+  ! 316L passes but MARGINAL: PREN 24.0 < upper target 30
+  Survivors: ['316L', '2205', '904L']
+  Pareto frontier (cost vs PREN): ['316L', '2205', '904L']
+  Layer 3 ranking: [('2205', 0.6794), ('316L', 0.6517), ('904L', 0.2898)]
+  Service-life economics (Rs/kg -> Rs per year to first major intervention, the inversion):
+    2205  Rs 315/kg | first intervention 20-25 yrs                        | ~Rs 14.0/kg-year
+    316L  Rs 289/kg | first intervention 8-15 yrs (periodic maintenance)  | ~Rs 25.1/kg-year
+    904L  Rs 525/kg | first intervention 20-25 yrs                        | ~Rs 23.3/kg-year
+  TOP RECOMMENDATION: 2205  (score 0.6794)
+    Why: PREN 35.0 vs environment C4-C5; cost index 1.8x (430=1.0); yield 450 MPa; formability 2/5.
+    Alternative 316L (score 0.6517): -0.15x cost, -11.0 PREN vs 2205.
+    Alternative 904L (score 0.2898): +1.20x cost, +0.5 PREN vs 2205.
+  [engine time: 0.04 ms]
+
+=== Scenario F: Metro coach interior, Delhi (cost: MEDIUM) ===
+  Input: app=metro_interior, location=Delhi, welded=False, cost_sensitivity=medium
+  Layer 1 -> corrosivity: C2-C3 -> indoor adjusted to C1-C2
+  Layer 2 elimination log:
+    (no eliminations)
+  Survivors: ['304', '304L', '316']
+  Pareto frontier (cost vs PREN): ['304', '316']
+  Layer 3 ranking: [('304', 0.8183), ('304L', 0.7963), ('316', 0.7163)]
+  Service-life economics (Rs/kg -> Rs per year to first major intervention, the inversion):
+    304   Rs 228/kg | first intervention 25+ yrs                          | ~Rs 8.3/kg-year
+    304L  Rs 236/kg | first intervention 25+ yrs                          | ~Rs 8.6/kg-year
+    316   Rs 280/kg | first intervention 25+ yrs                          | ~Rs 10.2/kg-year
+  TOP RECOMMENDATION: 304  (score 0.8183)
+    Why: PREN 19.0 vs environment C1-C2; cost index 1.3x (430=1.0); yield 205 MPa; formability 5/5.
+    Alternative 304L (score 0.7963): +0.05x cost, +0.0 PREN vs 304.
+    Alternative 316 (score 0.7163): +0.30x cost, +5.5 PREN vs 304.
+  [engine time: 0.03 ms]
+
+--- PART 2: EDGE CASE -- NO MATCHING GRADE (objective F6) ---
+
+=== Edge case: furnace liner at 1200C (exceeds every PoC grade) ===
+  Input: app=furnace_liner, location=Delhi, welded=False, cost_sensitivity=low
+  Layer 1 -> corrosivity: C2-C3
+  Layer 2 elimination log:
+  x 310 eliminated: max service temp 1035C < required 1200C
+  Survivors: []
+  Layer 3 ranking: []
+  NO GRADE in the PoC catalog meets all constraints. -> Edge-case handler: show closest partial matches and escalate to Jindal technical team with pre-filled context (objective F6).
+  [engine time: 0.01 ms]
+
+--- PART 3: DETERMINISM CHECK ---
+
+=== Determinism run 1 (Scenario A repeat) ===
+  Input: app=outdoor_railing, location=Panaji, Goa, welded=False, cost_sensitivity=medium
+  Layer 1 -> corrosivity: C4-C5
+  Layer 2 elimination log:
+  x 304 eliminated: PREN 19.0 < floor 24 for C4-C5
+  x 304L eliminated: PREN 19.0 < floor 24 for C4-C5
+  ! 316 passes but MARGINAL: PREN 24.5 < upper target 30
+  ! 316L passes but MARGINAL: PREN 24.0 < upper target 30
+  Survivors: ['316', '316L', '2205']
+  Pareto frontier (cost vs PREN): ['316', '2205']
+  Layer 3 ranking: [('2205', 0.7265), ('316', 0.689), ('316L', 0.6761)]
+  Service-life economics (Rs/kg -> Rs per year to first major intervention, the inversion):
+    2205  Rs 315/kg | first intervention 20-25 yrs                        | ~Rs 14.0/kg-year
+    316   Rs 280/kg | first intervention 8-15 yrs (periodic maintenance)  | ~Rs 24.3/kg-year
+    316L  Rs 289/kg | first intervention 8-15 yrs (periodic maintenance)  | ~Rs 25.1/kg-year
+  TOP RECOMMENDATION: 2205  (score 0.7265)
+    Why: PREN 35.0 vs environment C4-C5; cost index 1.8x (430=1.0); yield 450 MPa; formability 2/5.
+    Alternative 316 (score 0.689): -0.20x cost, -10.5 PREN vs 2205.
+    Alternative 316L (score 0.6761): -0.15x cost, -11.0 PREN vs 2205.
+  [engine time: 0.04 ms]
+
+=== Determinism run 2 (identical input) ===
+  Input: app=outdoor_railing, location=Panaji, Goa, welded=False, cost_sensitivity=medium
+  Layer 1 -> corrosivity: C4-C5
+  Layer 2 elimination log:
+  x 304 eliminated: PREN 19.0 < floor 24 for C4-C5
+  x 304L eliminated: PREN 19.0 < floor 24 for C4-C5
+  ! 316 passes but MARGINAL: PREN 24.5 < upper target 30
+  ! 316L passes but MARGINAL: PREN 24.0 < upper target 30
+  Survivors: ['316', '316L', '2205']
+  Pareto frontier (cost vs PREN): ['316', '2205']
+  Layer 3 ranking: [('2205', 0.7265), ('316', 0.689), ('316L', 0.6761)]
+  Service-life economics (Rs/kg -> Rs per year to first major intervention, the inversion):
+    2205  Rs 315/kg | first intervention 20-25 yrs                        | ~Rs 14.0/kg-year
+    316   Rs 280/kg | first intervention 8-15 yrs (periodic maintenance)  | ~Rs 24.3/kg-year
+    316L  Rs 289/kg | first intervention 8-15 yrs (periodic maintenance)  | ~Rs 25.1/kg-year
+  TOP RECOMMENDATION: 2205  (score 0.7265)
+    Why: PREN 35.0 vs environment C4-C5; cost index 1.8x (430=1.0); yield 450 MPa; formability 2/5.
+    Alternative 316 (score 0.689): -0.20x cost, -10.5 PREN vs 2205.
+    Alternative 316L (score 0.6761): -0.15x cost, -11.0 PREN vs 2205.
+  [engine time: 0.03 ms]
+
+  Identical outputs on identical inputs: True
+
+--- PART 4: ENVIRONMENTAL CLASSIFIER BACK-TEST (12 districts) ---
+  District                     PoC class Documented real-world observation
+  Mumbai (Marine Drive)        C5        Severe pitting reported on 304 railings within 18-24 months (field observation); 316 acceptable with cleaning
+  Panaji, Goa                  C4-C5     Coastal monsoon belt; 304 pits in 2-3 yrs (field observation); 316/duplex specified for exteriors
+  Chennai                      C4-C5     Aggressive coastal-urban; 316 minimum for seafront exteriors, duplex specified in Chennai-area desalination and coastal plant (industry practice, team note)
+  Visakhapatnam                C4-C5     Coastal-industrial (steel plant, port, refinery): chloride plus SO2 -- treated as one of India's more aggressive urban atmospheres (team note)
+  Surat                        C3        304 adequate but early exterior tarnishing after 5-7 yrs; 316 for premium installs
+  Jamshedpur                   C3-C4     Industrial atmospheric corrosion; 304 adequate for most uses; 316L for chemical exposure
+  Delhi                        C2-C3     Urban inland; 304 standard for architecture and transit interior fittings
+  Pune                         C2-C3     Inland industrial; standard grades perform well
+  Rajkot                       C2        Dry inland; 202-type/304 standard for utensil industry
+  Nashik                       C2        Semi-arid inland; 304 and 430 perform well outdoors
+  Hisar                        C2        Continental dry (Jindal registered office and Hisar plant); minimal atmospheric corrosion
+  Jaipur                       C2        Semi-arid; even 202-type/430 perform well outdoors
+
+--- PART 5: SLIDER SENSITIVITY (Scenario A, medium vs high cost) ---
+  medium cost sensitivity -> top pick: 2205
+  high   cost sensitivity -> top pick: 316
+  (Demonstrates the Layer 3 real-time re-ranking behaviour.)
